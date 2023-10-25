@@ -43,12 +43,11 @@ def redirect_page():
     token_info = create_spotify_oauth().get_access_token(code)
     # save the token info in the session
     session[TOKEN_INFO] = token_info
-    # redirect the user to the save_discover_weekly route
+    # redirect the user to the homepage
     return render_template('home.html')
 
-# route to save the Discover Weekly songs to a playlist
-@app.route('/saveDiscoverWeekly')
-def save_discover_weekly():
+@app.route('/viewPlaylists')
+def view_playlists():
     try: 
         # get the token info from the session
         token_info = get_token()
