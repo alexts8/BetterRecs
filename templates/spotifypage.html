@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+ <head>
+   <meta charset="utf-8">
+   <title>Spotify</title>
+ </head>
+ <body>
+    <header>
+      <div class="container">
+        <h1 >Spotify</h1>
+        <h2> logged in successfully!</h2>
+        {% if pl is defined and pl|length > 0 %}
+          <p>found playlists:</p>
+          <br/>
+            <ol>
+                {% for (name,id) in pl.items() %}
+                  <li><a href='/playlist/{{id}}'>{{ name }}</a></li>
+                {% endfor %}
+            </ol>
+        {% else %}
+          <p>No playlists found!</p>
+        {% endif %}
+      </div>
+    </header>
+ </body>
+</html>

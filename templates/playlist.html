@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+ <head>
+   <meta charset="utf-8">
+   <title>Home</title>
+ </head>
+ <body>
+    <header>
+      <div class="container">
+        <h1 >{{pname}}</h1>
+        {% if psongs is defined and psongs|length > 0 %}
+        <p>found songs:</p>
+        <br/>
+          <ol>
+              {% for song in psongs%}
+                <li>{{ song['track']['name'] }} - {{ song['track']['artists'][0]['name'] }}</li>
+              {% endfor %}
+          </ol>
+      {% else %}
+        <p>No songs found!</p>
+      {% endif %}
+      </div>
+    </header>
+ </body>
+</html>

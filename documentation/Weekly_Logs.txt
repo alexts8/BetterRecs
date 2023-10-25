@@ -1,0 +1,10 @@
+WK5 
+
+This week, I worked further on my application's core functionality,
+creating a page that displays playlists as clickable links, that show a playlist's contents when clicked.
+This will be key functionality in my app as gathering song data is a critical part of creating the machine learning model.
+I continued researching ML models, and after comparing various options I decided to work with a 
+"content based filtering" model - further research on this to be done next week. 
+In my meeting with my supervisor we discussed my progress, and I was encouraged to focus on design before
+going much further with code at this stage - I plan to create use case diagrams
+ and further design documents for my app this week, while continuing my background research.
