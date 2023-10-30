@@ -96,6 +96,7 @@ def playlist_page(id):
             playlist = sp.playlist_tracks(id)
             for song in playlist['items']:
                 songs.append(song)
+            #getting arounf the 100 song limit - extend the array when items remain in the playlist
             while playlist['next']:
                 playlist = sp.next(playlist)
                 songs.extend(playlist['items'])
@@ -132,5 +133,3 @@ def create_spotify_oauth():
     )
     
 app.run(debug=True)
-
-#session problem - need to get rid of the access token!
