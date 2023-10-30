@@ -96,7 +96,11 @@ def playlist_page(id):
             playlist = sp.playlist_tracks(id)
             for song in playlist['items']:
                 songs.append(song)
+            while playlist['next']:
+                playlist = sp.next(playlist)
+                songs.extend(playlist['items'])
             return render_template('playlist.html', pname = name, psongs = songs)
+
         
     return render_template('error.html', error_text = "playlist not found")
             

@@ -8,3 +8,13 @@ I continued researching ML models, and after comparing various options I decided
 In my meeting with my supervisor we discussed my progress, and I was encouraged to focus on design before
 going much further with code at this stage - I plan to create use case diagrams
  and further design documents for my app this week, while continuing my background research.
+
+
+WK6
+This week, i took a step back from coding and put more focus on designing my app.
+I drafted multiple diagrams, including use-case, software architecture, and flow diagrams.
+I plan on using these as the basis of my app's design going forward, and all my coding will be
+done in adherence with the design.
+In my meeting with my supervisor, we discussed what I can do in terms of research and design going forward,
+and I was encouraged to think about the interim demo, and what I want to have ready for it.
+Hence this week I plan on progressing with my code to have more demoable items ready, and I plan on starting my interim report.
