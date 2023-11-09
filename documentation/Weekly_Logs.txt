@@ -1,5 +1,4 @@
 WK5 
-
 This week, I worked further on my application's core functionality,
 creating a page that displays playlists as clickable links, that show a playlist's contents when clicked.
 This will be key functionality in my app as gathering song data is a critical part of creating the machine learning model.
@@ -27,3 +26,12 @@ It is still in the very early stages, I'm currently only focused on data extract
 and cleaning. No meeting was held with my supervisor as it's review week.
 this week I will continue designing and building my ML model and I will
 work on the interim report.
+
+WK8
+This week, I made great progress on my recommender system, implementing a
+simple cosine similarity function that can find similar songs to an inputted playlist,
+and provide some recommendations. I will continue working on it this week and try
+to improve the model's recommendations. I continued working on the report and began
+the "Design" chapter, which I aim to finish this week. I caught up with my supervisor
+and we discussed my progress towards having demoable items ready for the
+interim demo, and he answered some questions I had.
