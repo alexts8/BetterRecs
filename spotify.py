@@ -3,7 +3,8 @@ import time
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from flask import Flask, request, url_for, session, redirect, render_template
-import os
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 # initialize Flask app
@@ -73,6 +74,84 @@ def view_playlists():
     return render_template('spotifypage.html', pl=user_pl )
 
 
+def get_recommendations(id):
+    try: 
+        # get the token info from the session
+        token_info = get_token()
+    except:
+       # if the token info is not found, redirect the user to the login route
+        print('User not logged in')
+        return redirect("/")
+
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    tracks_data = []
+    playlist = sp.playlist_tracks(id)
+    
+    print('in function', id)
+        
+    for track in playlist['items']:
+        track_data = {
+                'danceability': None,
+                'energy': None,
+                'loudness': None,
+                'speechiness': None,
+                'acousticness': None,
+                'instrumentalness': None,
+                'liveness': None,
+                'valence': None,
+                'tempo': None,
+                'id': track['track']['id']
+            }
+        
+        audio_features = sp.audio_features([track['track']['uri']])[0]
+        if audio_features:
+            track_data['danceability'] = audio_features['danceability']
+            track_data['energy'] = audio_features['energy']
+            track_data['loudness'] = audio_features['loudness']
+            track_data['speechiness'] = audio_features['speechiness']
+            track_data['acousticness'] = audio_features['acousticness']
+            track_data['instrumentalness'] = audio_features['instrumentalness']
+            track_data['liveness'] = audio_features['liveness']
+            track_data['valence'] = audio_features['valence']
+            track_data['tempo'] = audio_features['tempo']
+            
+        tracks_data.append(track_data)
+
+        playlist_features = pd.DataFrame(tracks_data)
+        playlist_features.drop_duplicates('id')
+        all_songs_df = pd.read_csv(r'C:\Users\alext\OneDrive\Desktop\ml_data\tracksgenres.csv')
+
+        #rearrange columns to match the user dataframe
+        all_songs_df_order = ['artists','genres', 'id', 'track_pop','danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo']
+        all_songs_features_order = ['danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo','id']
+        all_songs_df = all_songs_df[all_songs_df_order]
+        all_songs_features = all_songs_df[all_songs_features_order] 
+        
+        # Find all non-playlist song features
+        playlistfeatures = playlist_features.drop(columns = "id")
+        playlistfeatures = playlistfeatures.sum(axis=0)
+        
+        non_playlist_df = all_songs_df[all_songs_df['id'].isin(all_songs_features['id'].values)]
+        
+        # Find cosine similarity between the playlist and the complete song set
+        non_playlist_df['sim'] = cosine_similarity(all_songs_features.drop('id', axis = 1).values, playlistfeatures.values.reshape(1, -1))[:,0]
+        recommendations = non_playlist_df.sort_values('sim',ascending = False).head(40)
+        
+        #convert to dict
+        recommendations_dict = recommendations.set_index('artists')['id'].to_dict()
+        
+        #func to find song title
+        def get_song_title(track_id):
+            track_info = sp.track(track_id)
+            return track_info['name']
+
+        #get the song title for the id
+        recommendations_dict = {artist: get_song_title(track_id) for artist, track_id in recommendations_dict.items()}
+            
+        return(recommendations_dict)
+
+
+
 @app.route('/playlist/<string:id>')
 def playlist_page(id):
     try: 
@@ -82,12 +161,16 @@ def playlist_page(id):
         # if the token info is not found, redirect the user to the login route
         print('User not logged in')
         return redirect("/")
+    
 
     # create a Spotipy instance with the access token
     sp = spotipy.Spotify(auth=token_info['access_token'])
     # get the user's playlists
     songs = []
     current_playlists =  sp.current_user_playlists()['items']
+    
+    print("Playlist ID:", id)
+    recommendations_dict = get_recommendations(id)
     
     for pl in current_playlists:
         if pl['id'] == id:
@@ -96,17 +179,14 @@ def playlist_page(id):
             playlist = sp.playlist_tracks(id)
             for song in playlist['items']:
                 songs.append(song)
-            #getting arounf the 100 song limit - extend the array when items remain in the playlist
+            #getting around the 100 song limit - extend the array when items remain in the playlist
             while playlist['next']:
                 playlist = sp.next(playlist)
                 songs.extend(playlist['items'])
-            return render_template('playlist.html', pname = name, psongs = songs)
-
+            return render_template('playlist.html', pname = name, psongs = songs, recommendations_dict = recommendations_dict )
         
     return render_template('error.html', error_text = "playlist not found")
             
-            
-    
 # function to get the token info from the session
 def get_token():
     token_info = session.get(TOKEN_INFO, None)
@@ -133,3 +213,4 @@ def create_spotify_oauth():
     )
     
 app.run(debug=True)
+
