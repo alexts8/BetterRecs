@@ -2,12 +2,14 @@
 <html lang="en" dir="ltr">
  <head>
    <meta charset="utf-8">
+   <link rel="stylesheet" href="styles.css">
    <title>Home</title>
  </head>
  <body>
     <header>
       <div class="container">
         <h1 >{{pname}}</h1>
+      </header>
         {% if psongs is defined and psongs|length > 0 %}
         <p>found songs:</p>
         <br/>
@@ -20,12 +22,25 @@
         <p>No songs found!</p>
       {% endif %}
       </div>
-    </header>
-    <div>
-      <a href ='/getRecommendations/{{id}}'>
-        <button> Generate Recomendations </button>
-      </a>
-    </div>
 
+      <form action='/getRecommendations/{{id}}' method = "post">
+        <div class="slider-container">
+          <p>Happiness </p>
+          <input type="range" id="slider1" name="slider1" min="-1" max="1" step="0.01" value="0">
+
+          <p>Danceability </p>
+          <input type="range" id="slider2" name="slider2"  min="-1" max="1" step="0.01" value="0">
+
+          <p>Energy </p>
+          <input type="range" id="slider3" name="slider3"  min="-1" max="1" step="0.01" value="0">
+
+          <p>Loudness </p>
+          <input type="range" id="slider4" name="slider4" min="-1" max="1" step="0.01" value="0">
+
+          <p>Tempo </p>
+          <input type="range" id="slider5" name="slider5" min="-50" max="50" step="1" value="0" >
+        </div>
+        <button type="submit">Generate Recommendations</button>
+    </form>
  </body>
 </html>

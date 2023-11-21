@@ -60,7 +60,6 @@ def view_playlists():
     # create a Spotipy instance with the access token
     sp = spotipy.Spotify(auth=token_info['access_token'])
     # get the user's playlists
-    print(sp.me())
     current_playlists =  sp.current_user_playlists()['items']
 
 
@@ -74,7 +73,7 @@ def view_playlists():
     return render_template('spotifypage.html', pl=user_pl )
 
 
-def get_recommendations(id):
+def get_recommendations(id, slider_values):
     try: 
         # get the token info from the session
         token_info = get_token()
@@ -87,8 +86,6 @@ def get_recommendations(id):
     tracks_data = []
     playlist = sp.playlist_tracks(id)
     
-    print('in function', id)
-        
     for track in playlist['items']:
         track_data = {
                 'danceability': None,
@@ -130,6 +127,14 @@ def get_recommendations(id):
         # Find all non-playlist song features
         playlistfeatures = playlist_features.drop(columns = "id")
         playlistfeatures = playlistfeatures.sum(axis=0)
+        
+        print("before adding sliders:", playlistfeatures)
+  
+        for index in playlistfeatures.index:
+            if index in slider_values:
+                playlistfeatures[index] += slider_values[index]
+
+        print("after adding sliders: ", playlistfeatures)
         
         non_playlist_df = all_songs_df[all_songs_df['id'].isin(all_songs_features['id'].values)]
         
@@ -184,9 +189,20 @@ def playlist_page(id):
     return render_template('error.html', error_text = "playlist not found")
 
 
-@app.route('/getRecommendations/<string:id>')
+@app.route('/getRecommendations/<string:id>',  methods=['GET', 'POST'])
 def recommendations_page(id):
-    recommendations_dict = get_recommendations(id)
+    slider_values = {
+        'valence' : float(request.form.get('slider1')),
+        'danceability': float(request.form.get('slider2')),
+        'energy' : float(request.form.get('slider3')),
+        'loudness' : float(request.form.get('slider4')),
+        'tempo' : float(request.form.get('slider5'))
+    }
+    
+
+
+
+    recommendations_dict = get_recommendations(id, slider_values)
     return render_template('recommendations.html', recommendations_dict = recommendations_dict)
             
 # function to get the token info from the session
