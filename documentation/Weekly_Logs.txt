@@ -35,3 +35,9 @@ to improve the model's recommendations. I continued working on the report and be
 the "Design" chapter, which I aim to finish this week. I caught up with my supervisor
 and we discussed my progress towards having demoable items ready for the
 interim demo, and he answered some questions I had.
+
+WK9
+This week I continued to fine tune my recommender system and identified areas of potential improvement.
+I implemented it into my web app so recommendations are displayed on the web (it was previously in a jupyter notebook).
+I also worked on the report, completing chapter 4. This week I plan on completing chapter 5
+and ironing out some issues with my code, and working on the frontend.

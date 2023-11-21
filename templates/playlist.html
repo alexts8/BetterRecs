@@ -22,20 +22,10 @@
       </div>
     </header>
     <div>
-      <button> Generate Recomendations </button>
+      <a href ='/getRecommendations/{{id}}'>
+        <button> Generate Recomendations </button>
+      </a>
     </div>
-    <p>Recommendations</p>
-    <table>
-      <tr>
-          <th>Artist</th>
-          <th>Song</th>
-      </tr>
-      {% for artist, song in recommendations_dict.items() %}
-          <tr>
-              <td>{{ artist }}</td>
-              <td>{{ song }}</td>
-          </tr>
-      {% endfor %}
-  </table>
+
  </body>
 </html>

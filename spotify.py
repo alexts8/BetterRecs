@@ -151,7 +151,6 @@ def get_recommendations(id):
         return(recommendations_dict)
 
 
-
 @app.route('/playlist/<string:id>')
 def playlist_page(id):
     try: 
@@ -168,10 +167,7 @@ def playlist_page(id):
     # get the user's playlists
     songs = []
     current_playlists =  sp.current_user_playlists()['items']
-    
-    print("Playlist ID:", id)
-    recommendations_dict = get_recommendations(id)
-    
+   
     for pl in current_playlists:
         if pl['id'] == id:
             name = pl['name']
@@ -183,9 +179,15 @@ def playlist_page(id):
             while playlist['next']:
                 playlist = sp.next(playlist)
                 songs.extend(playlist['items'])
-            return render_template('playlist.html', pname = name, psongs = songs, recommendations_dict = recommendations_dict )
+            return render_template('playlist.html', pname = name, psongs = songs, id = id )
         
     return render_template('error.html', error_text = "playlist not found")
+
+
+@app.route('/getRecommendations/<string:id>')
+def recommendations_page(id):
+    recommendations_dict = get_recommendations(id)
+    return render_template('recommendations.html', recommendations_dict = recommendations_dict)
             
 # function to get the token info from the session
 def get_token():
