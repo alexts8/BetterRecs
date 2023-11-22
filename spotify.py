@@ -166,7 +166,6 @@ def playlist_page(id):
         print('User not logged in')
         return redirect("/")
     
-
     # create a Spotipy instance with the access token
     sp = spotipy.Spotify(auth=token_info['access_token'])
     # get the user's playlists
@@ -174,18 +173,22 @@ def playlist_page(id):
     current_playlists =  sp.current_user_playlists()['items']
    
     for pl in current_playlists:
+        # find the requested playlist using id
         if pl['id'] == id:
             name = pl['name']
             id = pl['id']
+            #get the playlist tracks
             playlist = sp.playlist_tracks(id)
             for song in playlist['items']:
                 songs.append(song)
-            #getting around the 100 song limit - extend the array when items remain in the playlist
+            # getting around the 100 song limit - extend the array when items remain in the playlist
             while playlist['next']:
                 playlist = sp.next(playlist)
                 songs.extend(playlist['items'])
+            # display the html page 
             return render_template('playlist.html', pname = name, psongs = songs, id = id )
         
+    # return error page if no playlist found or other errors occur     
     return render_template('error.html', error_text = "playlist not found")
 
 
@@ -199,9 +202,6 @@ def recommendations_page(id):
         'tempo' : float(request.form.get('slider5'))
     }
     
-
-
-
     recommendations_dict = get_recommendations(id, slider_values)
     return render_template('recommendations.html', recommendations_dict = recommendations_dict)
             
@@ -223,6 +223,7 @@ def get_token():
     return token_info
 
 def create_spotify_oauth():
+    #create the client id, secret, redirect uri and scope for login
     return SpotifyOAuth(
         client_id = '6584944ee0d9495480193d9997a9efb7',
         client_secret = 'ac4205f012b64179acd46c0fbdb33f36',
