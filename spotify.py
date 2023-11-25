@@ -70,7 +70,7 @@ def view_playlists():
         plid = i['id']
         user_pl[plname] = plid
         
-    return render_template('spotifypage.html', pl=user_pl )
+    return render_template('playlist_list.html', pl=user_pl )
 
 
 def get_recommendations(id, slider_values):
@@ -136,11 +136,9 @@ def get_recommendations(id, slider_values):
 
         print("after adding sliders: ", playlistfeatures)
         
-        non_playlist_df = all_songs_df[all_songs_df['id'].isin(all_songs_features['id'].values)]
-        
         # Find cosine similarity between the playlist and the complete song set
-        non_playlist_df['sim'] = cosine_similarity(all_songs_features.drop('id', axis = 1).values, playlistfeatures.values.reshape(1, -1))[:,0]
-        recommendations = non_playlist_df.sort_values('sim',ascending = False).head(40)
+        all_songs_df['sim'] = cosine_similarity(all_songs_features.drop('id', axis = 1).values, playlistfeatures.values.reshape(1, -1))[:,0]
+        recommendations = all_songs_df.sort_values('sim',ascending = False).head(40)
         
         #convert to dict
         recommendations_dict = recommendations.set_index('artists')['id'].to_dict()

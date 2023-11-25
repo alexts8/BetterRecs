@@ -41,3 +41,9 @@ This week I continued to fine tune my recommender system and identified areas of
 I implemented it into my web app so recommendations are displayed on the web (it was previously in a jupyter notebook).
 I also worked on the report, completing chapter 4. This week I plan on completing chapter 5
 and ironing out some issues with my code, and working on the frontend.
+
+WK10
+This week I implemented the first prototype of "mood variables" into my application - these are HTML
+sliders that users can interact with to change the mood of their
+recommendations. I also worked on the report, leaving just one section to be completed.
+I hope to finish the report next week and start demo preparation.
