@@ -5,7 +5,8 @@ from sklearn.preprocessing import MinMaxScaler
 import spotipy
 import os
 from spotipy.oauth2 import SpotifyOAuth
-from flask import Flask, request, url_for, session, redirect, render_template
+from spotipy.client import SpotifyException
+from flask import Flask, jsonify, request, url_for, session, redirect, render_template
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -192,6 +193,11 @@ def get_recommendations(id, slider_values):
         non_playlist_df = all_songs_df[all_songs_df['genres'].apply(lambda x: any(genre in genres_list for genre in x))]
         recommendations = non_playlist_df.sort_values('sim',ascending = False).head(40)
         
+        # maintain a list of song ids for later use
+        song_ids_list = recommendations['id'].tolist()
+        for i in song_ids_list:
+            print(i)
+        
         # convert to dict
         recommendations_dict = recommendations.set_index('artists')['id'].to_dict()
         
@@ -203,7 +209,7 @@ def get_recommendations(id, slider_values):
         # get the song title for the id
         recommendations_dict = {artist: get_song_title(track_id) for artist, track_id in recommendations_dict.items()}
             
-        return(recommendations_dict)
+        return(recommendations_dict, song_ids_list)
 
 
 @app.route('/playlist/<string:id>')
@@ -255,8 +261,39 @@ def recommendations_page(id):
     }
     
     # getting recommendations and returning them to the recommendations.html page
-    recommendations_dict = get_recommendations(id, slider_values)
-    return render_template('recommendations.html', recommendations_dict = recommendations_dict)
+    recommendations_dict, song_ids_list = get_recommendations(id, slider_values)
+    return render_template('recommendations.html', recommendations_dict = recommendations_dict, song_ids_list = song_ids_list )
+
+@app.route('/create_playlist', methods=['POST'])
+def create_playlist():
+    try: 
+        # get the token info from the session
+        token_info = get_token()
+    except:
+        # if the token info is not found, redirect the user to the login route
+        print('User not logged in')
+        return redirect("/")
+    
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    
+    data = request.get_json()
+    song_ids = data.get('songIds', [])
+    print('Song IDs:', song_ids)
+    
+    try:
+        username = sp.current_user()['id']
+
+        # Create a new playlist
+        playlist = sp.user_playlist_create(user=username, name="New Playlist FYP", public=True)
+        
+        sp.playlist_add_items(playlist['id'], song_ids)
+
+        return jsonify({'status': 'success', 'message': 'Playlist created successfully'})
+    
+    except SpotifyException as e:
+        # Handle Spotify API exception
+        print(f"Error creating playlist: {e}")
+        return None
             
 # function to get the token info from the session
 def get_token():
@@ -285,4 +322,3 @@ def create_spotify_oauth():
     )
     
 app.run(debug=True)
-

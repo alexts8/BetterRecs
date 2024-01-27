@@ -1,22 +1,56 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
- <head>
-   <meta charset="utf-8">
-   <title>Home</title>
- </head>
- <body>
-    <p>Recommendations</p>
-    <table>
-      <tr>
-          <th>Artist</th>
-          <th>Song</th>
-      </tr>
-      {% for artist, song in recommendations_dict.items() %}
-          <tr>
-              <td>{{ artist }}</td>
-              <td>{{ song }}</td>
-          </tr>
-      {% endfor %}
+
+<head>
+  <meta charset="utf-8">
+  <title>Home</title>
+</head>
+
+<body>
+  <h2>Recommendations</h2>
+  <table>
+    <tr>
+      <th>Artist Name</th>
+      <th>Song Name</th>
+      <th>Listen On Spotify</th>
+    </tr>
+    {% for artist, song in recommendations_dict.items() %}
+    {% set id = song_ids_list[loop.index0] %}
+    <tr>
+      <td>{{ artist }}</td>
+      <td>{{ song }}</td>
+      <td><a href="https://open.spotify.com/track/{{ id }}" target="_blank">Listen Here</a></td>
+    </tr>
+    {% endfor %}
   </table>
- </body>
+
+
+  <button onclick="addToPlaylist()">Add To Playlist</button>
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script>
+    function addToPlaylist() {
+      var songIds = [];
+
+      {% for id in song_ids_list %}
+        songIds.push('{{ id }}');
+      {% endfor %}
+
+      $.ajax({
+        type: 'POST',
+        url: '{{ url_for('create_playlist') }}',
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({ songIds: songIds }),
+        success: function(response) {
+          console.log('Playlist created successfully');
+        },
+        error: function(error) {
+          console.error('Error creating playlist:', error);
+        }
+      });
+    }
+  </script>
+
+
+</body>
 </html>
