@@ -1,6 +1,9 @@
 # import necessary modules
+import ast
 import time
+from sklearn.preprocessing import MinMaxScaler
 import spotipy
+import os
 from spotipy.oauth2 import SpotifyOAuth
 from flask import Flask, request, url_for, session, redirect, render_template
 import pandas as pd
@@ -82,10 +85,29 @@ def get_recommendations(id, slider_values):
         print('User not logged in')
         return redirect("/")
 
+    # generate the access token to make an instance of the spotipy object
     sp = spotipy.Spotify(auth=token_info['access_token'])
     tracks_data = []
+    genres_list = []
+    
+    # get the playlist
     playlist = sp.playlist_tracks(id)
     
+    def get_genres(track_id):
+    # Get track information
+        track_info = sp.track(track_id)
+                    
+        # Get the list of genres for the first artist of the track
+        if 'artists' in track_info and track_info['artists']:
+            artist_id = track_info['artists'][0]['id']
+            artist_info = sp.artist(artist_id)
+                        
+            if 'genres' in artist_info:
+                return artist_info['genres']
+                    
+        return None
+
+    # create a track_data array
     for track in playlist['items']:
         track_data = {
                 'danceability': None,
@@ -97,9 +119,13 @@ def get_recommendations(id, slider_values):
                 'liveness': None,
                 'valence': None,
                 'tempo': None,
+                'genres': None,
+                'track_pop': None,
                 'id': track['track']['id']
             }
         
+
+        # populate the array with audio features of each track
         audio_features = sp.audio_features([track['track']['uri']])[0]
         if audio_features:
             track_data['danceability'] = audio_features['danceability']
@@ -111,44 +137,70 @@ def get_recommendations(id, slider_values):
             track_data['liveness'] = audio_features['liveness']
             track_data['valence'] = audio_features['valence']
             track_data['tempo'] = audio_features['tempo']
+            track_id = track['track']['id']
+            genres = get_genres(track_id)
+            for genre in genres:
+                genres_list.append(genre)
+            genres_list = list(set(genres_list))
+            track_info = sp.track(track_id)
+            popularity = track_info['popularity']
+            track_data['track_pop'] = popularity
             
         tracks_data.append(track_data)
 
+        # turn array into a pandas dataframe
         playlist_features = pd.DataFrame(tracks_data)
+        
+        # get rid of duplicate songs
         playlist_features.drop_duplicates('id')
-        all_songs_df = pd.read_csv(r'C:\Users\alext\OneDrive\Desktop\ml_data\tracksgenres.csv')
+        
+        # get the current directory and the relative path to find the csv file
+        # this is a workaround before the database is implemented
+        current_dir = os.getcwd()
+        relative_path = 'data/tracksgenres.csv'
+        file_path = os.path.join(current_dir, relative_path)
+
+        # Read the CSV file using pandas read_csv
+        all_songs_df = pd.read_csv(file_path)
 
         #rearrange columns to match the user dataframe
         all_songs_df_order = ['artists','genres', 'id', 'track_pop','danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo']
-        all_songs_features_order = ['danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo','id']
+        all_songs_features_order = ['danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo', 'track_pop', 'id']
         all_songs_df = all_songs_df[all_songs_df_order]
         all_songs_features = all_songs_df[all_songs_features_order] 
         
         # Find all non-playlist song features
         playlistfeatures = playlist_features.drop(columns = "id")
+        playlistfeatures.pop('genres')
         playlistfeatures = playlistfeatures.sum(axis=0)
         
+        
+        # print the playlist to the terminal before and after sliders are added, to assure they were applied
         print("before adding sliders:", playlistfeatures)
-  
+
+        # add each slider value to the corresponding playlist feature
         for index in playlistfeatures.index:
             if index in slider_values:
                 playlistfeatures[index] += slider_values[index]
 
         print("after adding sliders: ", playlistfeatures)
         
-        # Find cosine similarity between the playlist and the complete song set
+                
+        all_songs_df['genres'] = all_songs_df['genres'].apply(ast.literal_eval)
+         # Find cosine similarity between the playlist and the complete song set
         all_songs_df['sim'] = cosine_similarity(all_songs_features.drop('id', axis = 1).values, playlistfeatures.values.reshape(1, -1))[:,0]
-        recommendations = all_songs_df.sort_values('sim',ascending = False).head(40)
+        non_playlist_df = all_songs_df[all_songs_df['genres'].apply(lambda x: any(genre in genres_list for genre in x))]
+        recommendations = non_playlist_df.sort_values('sim',ascending = False).head(40)
         
-        #convert to dict
+        # convert to dict
         recommendations_dict = recommendations.set_index('artists')['id'].to_dict()
         
-        #func to find song title
+        # func to find song title
         def get_song_title(track_id):
             track_info = sp.track(track_id)
             return track_info['name']
 
-        #get the song title for the id
+        # get the song title for the id
         recommendations_dict = {artist: get_song_title(track_id) for artist, track_id in recommendations_dict.items()}
             
         return(recommendations_dict)
@@ -192,6 +244,8 @@ def playlist_page(id):
 
 @app.route('/getRecommendations/<string:id>',  methods=['GET', 'POST'])
 def recommendations_page(id):
+    
+    # get the slider values from the form using a GET request
     slider_values = {
         'valence' : float(request.form.get('slider1')),
         'danceability': float(request.form.get('slider2')),
@@ -200,6 +254,7 @@ def recommendations_page(id):
         'tempo' : float(request.form.get('slider5'))
     }
     
+    # getting recommendations and returning them to the recommendations.html page
     recommendations_dict = get_recommendations(id, slider_values)
     return render_template('recommendations.html', recommendations_dict = recommendations_dict)
             
