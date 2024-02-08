@@ -2,27 +2,31 @@
 <html lang="en" dir="ltr">
  <head>
    <meta charset="utf-8">
-   <link rel="stylesheet" href="styles.css">
    <title>Home</title>
+   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style/style.css') }}">
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&display=swap" rel="stylesheet">
  </head>
  <body>
     <header>
+      <h1> BetterRecs. </h1>
+    </header>
       <div class="container">
-        <h1 >{{pname}}</h1>
-      </header>
+        <h1>{{pname}}</h1>
         {% if psongs is defined and psongs|length > 0 %}
-        <p>found songs:</p>
-        <br/>
-          <ol>
+        <h2>Songs in Playlist:</h2>
+          <ul>
               {% for song in psongs%}
                 <li>{{ song['track']['name'] }} - {{ song['track']['artists'][0]['name'] }}</li>
               {% endfor %}
-          </ol>
+          </ul>
       {% else %}
         <p>No songs found!</p>
       {% endif %}
       </div>
 
+      <div class="container">
       <form action='/getRecommendations/{{id}}' method = "post">
         <div class="slider-container">
           <p>Happiness </p>
@@ -40,7 +44,8 @@
           <p>Tempo </p>
           <input type="range" id="slider5" name="slider5" min="-50" max="50" step="1" value="0" >
         </div>
-        <button type="submit">Generate Recommendations</button>
+        <button id = "submit" type="submit">Generate Recommendations</button>
     </form>
+  </div>
  </body>
 </html>

@@ -69,12 +69,19 @@ def view_playlists():
 
     # find the and user's playlists 
     user_pl = {}
-    for i in current_playlists:
-        plname = i['name']
-        plid = i['id']
+    images = []
+    for playlist in current_playlists:
+        plname = playlist['name']
+        plid = playlist['id']
         user_pl[plname] = plid
         
-    return render_template('playlist_list.html', pl=user_pl )
+        pl_details = sp.playlist(playlist['id'])
+        pl_image = pl_details['images'][0]['url'] if pl_details['images'] else None
+        images.append(pl_image)
+        
+        
+        
+    return render_template('playlist_list.html', pl=user_pl, images=images)
 
 
 def get_recommendations(id, slider_values):

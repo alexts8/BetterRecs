@@ -1,0 +1,133 @@
+body, h1, h2, ul {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: #f8f8f8;
+    color: #333;
+}
+
+header {
+    background-color: #1DB954; 
+    color: white; 
+    padding: 20px;
+    text-align: left;
+}
+
+header h1 {
+    font-size: 36px;
+}
+
+.container {
+    max-width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.container h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+ul {
+    list-style-type: none;
+}
+
+ul li{
+    padding: 3px;
+}
+
+ul li a {
+    text-decoration: none;
+}
+
+ul li a:hover {
+    text-decoration: underline;
+}
+
+
+/* styles specific to home.html */
+.homepage-left {
+    margin-top: 10px;
+    width: 50%; /* Adjust the width as needed */
+    height: 100vh; /* Take up the full height of the viewport */
+    float: left; /* Float the div to the left */
+}
+
+.homepage-left h1{
+    color: rgb(64, 61, 61);
+    font-size: 70px;
+    padding-left: 30px;
+    padding-top: 20px;
+}
+
+.homepage-left h2{
+    color: rgb(97, 94, 94);
+    padding-left: 30px;
+    padding-top: 30px;
+}
+
+.homepage-right {
+    margin-top: 10px;
+    width: 50%; /* Adjust the width as needed */
+    height: 100vh; /* Take up the full height of the viewport */
+    float: right; /* Float the div to the left */
+    text-align: center; /* Align button text horizontally */
+  }
+  
+.homepage-right button {
+    background-color: #1DB954;
+    color: white; 
+    border: none;
+    border-radius: 25px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 40px; 
+    width: 70%; 
+    height: 70%;
+  }
+  
+.homepage-right button:hover {
+    background-color: #1aab4d; /* Darker green on hover */
+}
+
+
+/* styles specific to playlist_list.html */
+
+.playlistdiv {
+    display: flex; /* Use flexbox layout */
+    align-items: center; /* Align items vertically */
+    border: 2px solid rgb(192, 184, 184);
+    border-radius: 25px;
+    margin: 3px;
+    height: auto;
+    width: 60%;
+}
+
+.playlistdiv img {
+    width: 70px;
+    height: 70px;
+    margin-right: 10px; /* Add margin to separate image from text */
+    padding: 10px;
+}
+
+.playlistdiv li{
+    font-size: 32px;
+}
+
+
+/* css specific to playlist.html */
+#submit{
+    background-color: #1DB954;
+    color: white; 
+    border: none;
+    border-radius: 25px;
+    font-family: 'Outfit', sans-serif;
+    padding: 5px;
+    margin-top: 10px;
+    font-size: 18px;
+}

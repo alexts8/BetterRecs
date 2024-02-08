@@ -1,26 +1,33 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
- <head>
+<head>
    <meta charset="utf-8">
    <title>Spotify</title>
+   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style/style.css') }}">
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&display=swap" rel="stylesheet">
  </head>
  <body>
-    <header>
+  <header>
+    <h1> BetterRecs. </h1>
+  </header>
       <div class="container">
-        <h1 >Spotify</h1>
-        <h2> logged in successfully!</h2>
+        <h1>Your Playlists</h1>
+        <h2>Choose a starting place for recommendations:</h2>
         {% if pl is defined and pl|length > 0 %}
-          <p>found playlists:</p>
-          <br/>
-            <ol>
+            <ul>
                 {% for (name,id) in pl.items() %}
+                <div class = "playlistdiv">
+                  <img src="{{ images[loop.index0] }}" alt="{{ name }}">
                   <li><a href='/playlist/{{id}}'>{{ name }}</a></li>
+                </div>
                 {% endfor %}
-            </ol>
+            </ul>
         {% else %}
           <p>No playlists found!</p>
         {% endif %}
       </div>
-    </header>
+
  </body>
 </html>
