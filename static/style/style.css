@@ -54,9 +54,9 @@ ul li a:hover {
 /* styles specific to home.html */
 .homepage-left {
     margin-top: 10px;
-    width: 50%; /* Adjust the width as needed */
-    height: 100vh; /* Take up the full height of the viewport */
-    float: left; /* Float the div to the left */
+    width: 50%;
+    height: 100vh; 
+    float: left; 
 }
 
 .homepage-left h1{
@@ -74,10 +74,10 @@ ul li a:hover {
 
 .homepage-right {
     margin-top: 10px;
-    width: 50%; /* Adjust the width as needed */
-    height: 100vh; /* Take up the full height of the viewport */
-    float: right; /* Float the div to the left */
-    text-align: center; /* Align button text horizontally */
+    width: 50%; 
+    height: 100vh; 
+    float: right;
+    text-align: center; 
   }
   
 .homepage-right button {
@@ -113,6 +113,7 @@ ul li a:hover {
     height: 70px;
     margin-right: 10px; /* Add margin to separate image from text */
     padding: 10px;
+    border-radius: 25px;
 }
 
 .playlistdiv li{
@@ -131,3 +132,17 @@ ul li a:hover {
     margin-top: 10px;
     font-size: 18px;
 }
+
+
+.change-mood-text{
+    float:left;
+    width:33%;
+    height: 100vh;
+    padding-top: 8%;
+}
+
+.change-mood-text h1{
+    font-size: 60px;
+    text-align: center;
+}
+
