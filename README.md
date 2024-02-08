@@ -15,10 +15,14 @@ will display in the terminal - when followed, this link should display the Spoti
 Log in using any Spotify account, and you should access the application.
 
 If the app doesn't run on first attempt, Flask and spotipy may need to be installed - this can be 
-done with by running the commands "pip install flask" and "pip install spotipy" in the terminal
+done with by running the commands
+!pip install flask
+and 
+!pip install spotipy
+in the terminal (or via another python package installer of your choosing).
 It is possible other packages like  pandas or sklearn arent installed. These can be installed with:
-pip install pandas
-pip install scikit-learn
+!pip install pandas
+!pip install scikit-learn
 
 Please contact me if any other issues are encountered running the application.
 
