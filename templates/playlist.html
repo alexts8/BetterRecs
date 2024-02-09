@@ -26,29 +26,35 @@
       {% endif %}
       </div>
 
-      <div class="container">
+    <div class="container">
         <div class = "change-mood-text">
           <h1>Change</h1>
           <h1>The</h1>
           <h1 style = "color: #1DB954">Mood</h1>
         </div>
-        <form action='/getRecommendations/{{id}}' method = "post">
-          <p>Happiness </p>
-          <input type="range" id="slider1" name="slider1" min="-1" max="1" step="0.01" value="0">
-
-          <p>Danceability </p>
-          <input type="range" id="slider2" name="slider2"  min="-1" max="1" step="0.01" value="0">
-
-          <p>Energy </p>
-          <input type="range" id="slider3" name="slider3"  min="-1" max="1" step="0.01" value="0">
-
-          <p>Loudness </p>
-          <input type="range" id="slider4" name="slider4" min="-1" max="1" step="0.01" value="0">
-
-          <p>Tempo </p>
-          <input type="range" id="slider5" name="slider5" min="-50" max="50" step="1" value="0" >
-          <button id = "submit" type="submit">Generate Recommendations</button>
-       </form>
+        <div class="change-mood-right">
+          <div class="sliders-container">
+            <form action='/getRecommendations/{{id}}' method="post">
+              <p>Happiness</p>
+              <input type="range" id="slider1" name="slider1" min="-1" max="1" step="0.01" value="0">
+        
+              <p>Danceability</p>
+              <input type="range" id="slider2" name="slider2" min="-1" max="1" step="0.01" value="0">
+        
+              <p>Energy</p>
+              <input type="range" id="slider3" name="slider3" min="-1" max="1" step="0.01" value="0">
+        
+              <p>Loudness</p>
+              <input type="range" id="slider4" name="slider4" min="-1" max="1" step="0.01" value="0">
+        
+              <p>Tempo</p>
+              <input type="range" id="slider5" name="slider5" min="-50" max="50" step="1" value="0">
+            </form>
+          </div>
+          <div class="button-container">
+            <button id="submit" type="submit">Generate Recommendations</button>
+          </div>
+        </div>
   </div>
  </body>
 </html>

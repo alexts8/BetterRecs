@@ -92,7 +92,7 @@ ul li a:hover {
   }
   
 .homepage-right button:hover {
-    background-color: #1aab4d; /* Darker green on hover */
+    background-color: #1aab4d; 
 }
 
 
@@ -122,17 +122,6 @@ ul li a:hover {
 
 
 /* css specific to playlist.html */
-#submit{
-    background-color: #1DB954;
-    color: white; 
-    border: none;
-    border-radius: 25px;
-    font-family: 'Outfit', sans-serif;
-    padding: 5px;
-    margin-top: 10px;
-    font-size: 18px;
-}
-
 
 .change-mood-text{
     float:left;
@@ -145,4 +134,39 @@ ul li a:hover {
     font-size: 60px;
     text-align: center;
 }
+
+.change-mood-right {
+    display: flex;
+    justify-content: space-between;
+}
+
+.sliders-container {
+    width: 50%;
+    padding-left: 60px; 
+}
+
+.button-container {
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#submit{
+    background-color: #1DB954;
+    color: white; 
+    border: none;
+    border-radius: 25px;
+    font-family: 'Outfit', sans-serif;
+    padding: 5px;
+    margin-top: 10px;
+    font-size: 30px; 
+    width: 80%; 
+    height: 80%;
+}
+
+#submit:hover {
+    background-color: #1aab4d; 
+}
+
 
