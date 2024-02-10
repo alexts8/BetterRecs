@@ -11,6 +11,11 @@
 <body>
   <header>
   <h1> BetterRecs. </h1>
+  <div class = "nav-buttons">
+    <button onclick="location.href='{{ url_for('redirect_page') }}'">Home</button>
+    <button>About</button>
+    <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
+  </div>
   </header>
   <h2>Recommendations</h2>
   <table>
@@ -30,7 +35,7 @@
   </table>
 
 
-  <button onclick="addToPlaylist()">Add To Playlist</button>
+  <button class = "add-playlist" onclick="addToPlaylist()">Add To Playlist</button>
 
   <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
   <script>

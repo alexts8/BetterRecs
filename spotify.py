@@ -35,7 +35,11 @@ def login():
 @app.route('/logout')
 def logout():
     session.clear()  # Clear the session
-    return redirect("/")
+    file_path = ".cache"
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    return redirect("https://accounts.spotify.com/en/logout")
+
 
 # route to handle the redirect URI after authorization
 @app.route('/redirect')
@@ -102,7 +106,7 @@ def get_recommendations(id, slider_values):
     playlist = sp.playlist_tracks(id)
     
     def get_genres(track_id):
-    # Get track information
+        # Get track information
         track_info = sp.track(track_id)
                     
         # Get the list of genres for the first artist of the track
@@ -156,67 +160,69 @@ def get_recommendations(id, slider_values):
             
         tracks_data.append(track_data)
 
-        # turn array into a pandas dataframe
-        playlist_features = pd.DataFrame(tracks_data)
+    # turn array into a pandas dataframe
+    playlist_features = pd.DataFrame(tracks_data)
         
-        # get rid of duplicate songs
-        playlist_features.drop_duplicates('id')
+    # get rid of duplicate songs
+    playlist_features.drop_duplicates('id')
         
-        # get the current directory and the relative path to find the csv file
-        # this is a workaround before the database is implemented
-        current_dir = os.getcwd()
-        relative_path = 'data/tracksgenres.csv'
-        file_path = os.path.join(current_dir, relative_path)
+    # get the current directory and the relative path to find the csv file
+    # this is a workaround before the database is implemented
+    current_dir = os.getcwd()
+    relative_path = 'data/tracksgenres.csv'
+    file_path = os.path.join(current_dir, relative_path)
 
-        # Read the CSV file using pandas read_csv
-        all_songs_df = pd.read_csv(file_path)
+    # Read the CSV file using pandas read_csv
+    all_songs_df = pd.read_csv(file_path)
 
-        #rearrange columns to match the user dataframe
-        all_songs_df_order = ['artists','genres', 'id', 'track_pop','danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo']
-        all_songs_features_order = ['danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo', 'track_pop', 'id']
-        all_songs_df = all_songs_df[all_songs_df_order]
-        all_songs_features = all_songs_df[all_songs_features_order] 
+    #rearrange columns to match the user dataframe
+    all_songs_df_order = ['artists','genres', 'id', 'track_pop','danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo']
+    all_songs_features_order = ['danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo', 'track_pop', 'id']
+    all_songs_df = all_songs_df[all_songs_df_order]
+    all_songs_features = all_songs_df[all_songs_features_order] 
         
-        # Find all non-playlist song features
-        playlistfeatures = playlist_features.drop(columns = "id")
-        playlistfeatures.pop('genres')
-        playlistfeatures = playlistfeatures.sum(axis=0)
+    # Find all non-playlist song features
+    playlistfeatures = playlist_features.drop(columns = "id")
+    playlistfeatures.pop('genres')
+    playlistfeatures = playlistfeatures.sum(axis=0)
         
         
-        # print the playlist to the terminal before and after sliders are added, to assure they were applied
-        print("before adding sliders:", playlistfeatures)
+    # print the playlist to the terminal before and after sliders are added, to assure they were applied
+    print("before adding sliders:", playlistfeatures)
 
-        # add each slider value to the corresponding playlist feature
-        for index in playlistfeatures.index:
-            if index in slider_values:
-                playlistfeatures[index] += slider_values[index]
+    # add each slider value to the corresponding playlist feature
+    for index in playlistfeatures.index:
+        if index in slider_values:
+            playlistfeatures[index] += slider_values[index]
 
-        print("after adding sliders: ", playlistfeatures)
+    print("after adding sliders: ", playlistfeatures)
         
                 
-        all_songs_df['genres'] = all_songs_df['genres'].apply(ast.literal_eval)
-         # Find cosine similarity between the playlist and the complete song set
-        all_songs_df['sim'] = cosine_similarity(all_songs_features.drop('id', axis = 1).values, playlistfeatures.values.reshape(1, -1))[:,0]
-        non_playlist_df = all_songs_df[all_songs_df['genres'].apply(lambda x: any(genre in genres_list for genre in x))]
-        recommendations = non_playlist_df.sort_values('sim',ascending = False).head(40)
+    all_songs_df['genres'] = all_songs_df['genres'].apply(ast.literal_eval)
+    # Find cosine similarity between the playlist and the complete song set
+    all_songs_df['sim'] = cosine_similarity(all_songs_features.drop('id', axis = 1).values, playlistfeatures.values.reshape(1, -1))[:,0]
+    non_playlist_df = all_songs_df[all_songs_df['genres'].apply(lambda x: any(genre in genres_list for genre in x))]
+    recommendations = non_playlist_df.sort_values('sim',ascending = False).head(40)
         
-        # maintain a list of song ids for later use
-        song_ids_list = recommendations['id'].tolist()
-        for i in song_ids_list:
-            print(i)
+    # maintain a list of song ids for later use
+    song_ids_list = recommendations['id'].tolist()
         
-        # convert to dict
-        recommendations_dict = recommendations.set_index('artists')['id'].to_dict()
-        
-        # func to find song title
-        def get_song_title(track_id):
-            track_info = sp.track(track_id)
-            return track_info['name']
+    recommendations_dict= {}
+    for song_id in song_ids_list:
+        # Get track information
+        track_info = sp.track(song_id)
 
-        # get the song title for the id
-        recommendations_dict = {artist: get_song_title(track_id) for artist, track_id in recommendations_dict.items()}
+        # Extract track name
+        track_name = track_info['name']
+
+        # Extract first artist name
+        artist_name = track_info['artists'][0]['name']
+
+        # Store track name and artist in the dictionary
+        recommendations_dict[track_name] = artist_name
             
-        return(recommendations_dict, song_ids_list)
+    return recommendations_dict, song_ids_list
+
 
 
 @app.route('/playlist/<string:id>')
@@ -257,6 +263,13 @@ def playlist_page(id):
 
 @app.route('/getRecommendations/<string:id>',  methods=['GET', 'POST'])
 def recommendations_page(id):
+    try: 
+        # get the token info from the session
+        token_info = get_token()
+    except:
+        # if the token info is not found, redirect the user to the login route
+        print('User not logged in')
+        return redirect("/")
     
     # get the slider values from the form using a GET request
     slider_values = {

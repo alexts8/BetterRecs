@@ -11,11 +11,17 @@
  <body>
   <header>
     <h1> BetterRecs. </h1>
+    <div class = "nav-buttons">
+      <button onclick="location.href='{{ url_for('redirect_page') }}'">Home</button>
+      <button>About</button>
+      <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
+    </div>
   </header>
       <div class="container">
         <h1>Your Playlists</h1>
         <h2>Choose a starting place for recommendations:</h2>
         {% if pl is defined and pl|length > 0 %}
+          <div class = "scroll-list-playlist">
             <ul>
                 {% for (name,id) in pl.items() %}
                 <div class = "playlistdiv">
@@ -24,6 +30,7 @@
                 </div>
                 {% endfor %}
             </ul>
+          </div>
         {% else %}
           <p>No playlists found!</p>
         {% endif %}

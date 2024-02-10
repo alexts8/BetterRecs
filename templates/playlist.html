@@ -11,16 +11,23 @@
  <body>
     <header>
       <h1> BetterRecs. </h1>
+      <div class = "nav-buttons">
+        <button onclick="location.href='{{ url_for('redirect_page') }}'">Home</button>
+        <button>About</button>
+        <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
+      </div>
     </header>
       <div class="container">
         <h1>{{pname}}</h1>
         {% if psongs is defined and psongs|length > 0 %}
         <h2>Songs in Playlist:</h2>
+        <div class = "scroll-list">
           <ul>
               {% for song in psongs%}
                 <li>{{ song['track']['name'] }} - {{ song['track']['artists'][0]['name'] }}</li>
               {% endfor %}
           </ul>
+        </div>
       {% else %}
         <p>No songs found!</p>
       {% endif %}
@@ -49,10 +56,11 @@
         
               <p>Tempo</p>
               <input type="range" id="slider5" name="slider5" min="-50" max="50" step="1" value="0">
-            </form>
+            
           </div>
           <div class="button-container">
             <button id="submit" type="submit">Generate Recommendations</button>
+          </form>
           </div>
         </div>
   </div>

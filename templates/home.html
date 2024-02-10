@@ -11,6 +11,11 @@
  <body>
   <header>
     <h1> BetterRecs. </h1>
+    <div class = "nav-buttons">
+      <button onclick="location.href='{{ url_for('redirect_page') }}'">Home</button>
+      <button>About</button>
+      <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
+    </div>
   </header>
       <div class="homepage-left">
         <h1>Better Music Recommendations, Powered by Machine Learning.</h1>
