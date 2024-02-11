@@ -17,23 +17,31 @@
     <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
   </div>
   </header>
-  <h2>Recommendations</h2>
+  <h1 id = "recommendations-header">Recommendations</h1>
   <table>
     <tr>
       <th>Artist Name</th>
       <th>Song Name</th>
-      <th>Listen On Spotify</th>
+      <th>Listen</th>
+      <th>Remove</th>
     </tr>
     {% for artist, song in recommendations_dict.items() %}
     {% set id = song_ids_list[loop.index0] %}
     <tr>
       <td>{{ artist }}</td>
       <td>{{ song }}</td>
-      <td><a href="https://open.spotify.com/track/{{ id }}" target="_blank">Listen Here</a></td>
+      <td><button id = "listen-button" onclick="window.open('https://open.spotify.com/track/{{ id }}', '_blank')">Listen Here</button></td>
+      <td><button id = "delete-button" onclick="deleteRow(this)">Delete</button></td> 
     </tr>
     {% endfor %}
   </table>
 
+  <script>
+    function deleteRow(button) {
+      var row = button.parentNode.parentNode;
+      row.parentNode.removeChild(row); 
+    }
+  </script>
 
   <button class = "add-playlist" onclick="addToPlaylist()">Add To Playlist</button>
 
