@@ -17,56 +17,56 @@
     <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
   </div>
   </header>
-  <h1 id = "recommendations-header">Recommendations</h1>
-  <table>
-    <tr>
-      <th>Artist Name</th>
-      <th>Song Name</th>
-      <th>Listen</th>
-      <th>Remove</th>
-    </tr>
-    {% for artist, song in recommendations_dict.items() %}
-    {% set id = song_ids_list[loop.index0] %}
-    <tr>
-      <td>{{ artist }}</td>
-      <td>{{ song }}</td>
-      <td><button id = "listen-button" onclick="window.open('https://open.spotify.com/track/{{ id }}', '_blank')">Listen Here</button></td>
-      <td><button id = "delete-button" onclick="deleteRow(this)">Delete</button></td> 
-    </tr>
-    {% endfor %}
-  </table>
+  <div class="container">
+    <h1 id = "recommendations-header">Your Recommendations</h1>
+    <form method="post" action="/create_playlist">
+      <div class="table-container">
+        <table>
+          <tr>
+            <th>Artist Name</th>
+            <th>Song Name</th>
+            <th>Listen</th>
+            <th>Select</th>
+          </tr>
+          {% for artist, song in recommendations_dict.items() %}
+          {% set id = song_ids_list[loop.index0] %}
+          <tr>
+            <td>{{ artist }}</td>
+            <td>{{ song }}</td>
+            <td><button id = "listen-button" onclick="window.open('https://open.spotify.com/track/{{ id }}', '_blank')">Listen Here</button></td>
+            <td id="checkbox-td"><input id ="checkbox" type="checkbox" name="song_ids[]" value="{{ id }}"></td>
+          </tr>
+          {% endfor %}
+        </table>
+    </div>
+  </div>
+  <div class="container">
+    <button class = "add-playlist" type="submit">Add To Playlist</button>
+    <div id="message-container"></div>
+  </div>
+  </form>
 
+  <div id="message-container"></div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
-    function deleteRow(button) {
-      var row = button.parentNode.parentNode;
-      row.parentNode.removeChild(row); 
-    }
-  </script>
-
-  <button class = "add-playlist" onclick="addToPlaylist()">Add To Playlist</button>
-
-  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-  <script>
-    function addToPlaylist() {
-      var songIds = [];
-
-      {% for id in song_ids_list %}
-        songIds.push('{{ id }}');
-      {% endfor %}
-
-      $.ajax({
-        type: 'POST',
-        url: '{{ url_for('create_playlist') }}',
-        contentType: 'application/json;charset=UTF-8',
-        data: JSON.stringify({ songIds: songIds }),
-        success: function(response) {
-          console.log('Playlist created successfully');
-        },
-        error: function(error) {
-          console.error('Error creating playlist:', error);
-        }
+    $(document).ready(function() {
+      $('form').submit(function(e) {
+        e.preventDefault(); 
+        var formData = $(this).serialize(); 
+        $.ajax({
+          type: 'POST',
+          url: '/create_playlist',
+          data: formData,
+          success: function(response) {
+            $('#message-container').text(response); 
+          },
+          error: function(error) {
+            console.error('Error:', error);
+          }
+        });
       });
-    }
+    });
   </script>
 
 

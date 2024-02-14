@@ -296,24 +296,22 @@ def create_playlist():
     
     sp = spotipy.Spotify(auth=token_info['access_token'])
     
-    data = request.get_json()
-    song_ids = data.get('songIds', [])
+    song_ids = request.form.getlist('song_ids[]')
     print('Song IDs:', song_ids)
     
     try:
         username = sp.current_user()['id']
 
         # Create a new playlist
-        playlist = sp.user_playlist_create(user=username, name="New Playlist FYP", public=True)
+        playlist = sp.user_playlist_create(user=username, name="BetterRecs. Playlist", public=True)
         
         sp.playlist_add_items(playlist['id'], song_ids)
+        
+        return "Playlist created successfully!"
 
-        return jsonify({'status': 'success', 'message': 'Playlist created successfully'})
-    
     except SpotifyException as e:
         # Handle Spotify API exception
-        print(f"Error creating playlist: {e}")
-        return None
+        return f"Error Creating Playlist: {e}"
             
 # function to get the token info from the session
 def get_token():

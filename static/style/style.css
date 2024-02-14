@@ -215,6 +215,7 @@ ul li a:hover {
 #recommendations-header{
     margin-top: 10px;
     margin-left: 20px;
+    text-align: center;
 }
 
 .add-playlist{
@@ -229,24 +230,29 @@ ul li a:hover {
 
 
 table {
-    border: 1px solid rgb(192, 184, 184);
-    border-radius: 25px;
-    margin: 8px;
     padding: 10px;
     height: auto;
-    width: 60%;
+    width: 80%;
     border-collapse: separate;
+    margin-left: auto;
+    margin-right: auto;
 }
 
+.table-container {
+    height: 70vh;
+    overflow-y: auto; 
+    border: 1px solid rgb(192, 184, 184);
+}
+  
 td{
     border: 1px solid rgb(192, 184, 184); 
-    padding: 10px;
+    padding: 5px;
     margin: 6px;
 }
 
 th{
     text-align: left;
-    font-size: 24px;
+    font-size: 20px;
     margin:2px;
 }
 
@@ -259,22 +265,17 @@ th{
 }
 
 #listen-button:hover{
-    background-color: rgb(192, 184, 184); ;
+    background-color: rgb(192, 184, 184); 
 }
-
-#delete-button{
-    padding: 10px;
-    background-color: rgb(231, 111, 111); 
-    border: none;
-    border-radius: 25px;
-    font-family: 'Outfit', sans-serif;
-}
-
-#delete-button:hover{
-    background-color: rgb(238, 63, 63); ;
-}
-
 
 .button-container{
     text-align: center;
+}
+
+#checkbox-td{
+    text-align: center;
+}
+
+#checkbox{
+    padding: 5px;
 }
