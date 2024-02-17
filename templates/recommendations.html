@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
-  <title>Home</title>
+  <title>Recommendations</title>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style/style.css') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,7 @@
   </header>
   <div class="container">
     <h1 id = "recommendations-header">Your Recommendations</h1>
-    <form method="post" action="/create_playlist">
+    <form id  ="playlist-form" method="post" action="/create_playlist">
       <div class="table-container">
         <table>
           <tr>
@@ -41,25 +41,31 @@
     </div>
   </div>
   <div class="container">
-    <button class = "add-playlist" type="submit">Add To Playlist</button>
+    <button class="recommendations-actions" type="submit" name="add-to-playlist-btn">Add To Playlist</button>
+    <button class="recommendations-actions" type="submit" name="regenerate-btn">Regenerate</button>
     <div id="message-container"></div>
   </div>
   </form>
 
-  <div id="message-container"></div>
-
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     $(document).ready(function() {
-      $('form').submit(function(e) {
+      $('.recommendations-actions').click(function(e) {
         e.preventDefault(); 
-        var formData = $(this).serialize(); 
+        var buttonName = $(this).attr('name');
+        var id = "{{ id }}";
+        var formData = $('#playlist-form').serialize() + '&' + buttonName + '=1&id=' + id;
         $.ajax({
           type: 'POST',
           url: '/create_playlist',
           data: formData,
           success: function(response) {
-            $('#message-container').text(response); 
+            if (buttonName === 'add-to-playlist-btn') {
+              $('#message-container').text(response); 
+            }
+            else if (buttonName === 'regenerate-btn') {
+              document.documentElement.innerHTML = response;
+            }
           },
           error: function(error) {
             console.error('Error:', error);
@@ -68,6 +74,7 @@
       });
     });
   </script>
+  
 
 
 </body>

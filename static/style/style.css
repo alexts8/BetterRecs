@@ -218,7 +218,7 @@ ul li a:hover {
     text-align: center;
 }
 
-.add-playlist{
+.recommendations-actions{
     padding: 15px;
     margin-left:10px;
     background-color: #27cf62;
@@ -226,6 +226,10 @@ ul li a:hover {
     border: none;
     border-radius: 25px;
     font-family: 'Outfit', sans-serif;
+}
+
+.recommendations-actions:hover {
+    background-color: #1aab4d; 
 }
 
 

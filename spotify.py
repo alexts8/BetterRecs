@@ -1,5 +1,6 @@
 # import necessary modules
 import ast
+import json
 import time
 from sklearn.preprocessing import MinMaxScaler
 import spotipy
@@ -23,6 +24,7 @@ app.secret_key = 'wefkhejif37r72'
 # set the key for the token info in the session dictionary
 TOKEN_INFO = 'token_info'
 
+
 # route to handle logging in
 @app.route('/')
 def login():
@@ -31,6 +33,7 @@ def login():
     auth_url = create_spotify_oauth().get_authorize_url()
     # redirect the user to the authorization URL
     return redirect(auth_url)
+
 
 @app.route('/logout')
 def logout():
@@ -55,6 +58,7 @@ def redirect_page():
     # redirect the user to the homepage
     return render_template('home.html')
 
+
 @app.route('/viewPlaylists')
 def view_playlists():
     try: 
@@ -70,7 +74,6 @@ def view_playlists():
     # get the user's playlists
     current_playlists =  sp.current_user_playlists()['items']
 
-
     # find the and user's playlists 
     user_pl = {}
     images = []
@@ -83,12 +86,10 @@ def view_playlists():
         pl_image = pl_details['images'][0]['url'] if pl_details['images'] else None
         images.append(pl_image)
         
-        
-        
     return render_template('playlist_list.html', pl=user_pl, images=images)
 
 
-def get_recommendations(id, slider_values):
+def get_recommendations(id, slider_values=None):
     try: 
         # get the token info from the session
         token_info = get_token()
@@ -185,18 +186,15 @@ def get_recommendations(id, slider_values):
     playlistfeatures = playlist_features.drop(columns = "id")
     playlistfeatures.pop('genres')
     playlistfeatures = playlistfeatures.sum(axis=0)
-        
-        
-    # print the playlist to the terminal before and after sliders are added, to assure they were applied
-    print("before adding sliders:", playlistfeatures)
-
+    
     # add each slider value to the corresponding playlist feature
-    for index in playlistfeatures.index:
-        if index in slider_values:
-            playlistfeatures[index] += slider_values[index]
-
-    print("after adding sliders: ", playlistfeatures)
-        
+    if slider_values:
+        # print the playlist to the terminal before and after sliders are added, to assure they were applied
+        print("before adding sliders:", playlistfeatures)
+        for index in playlistfeatures.index:
+            if index in slider_values:
+                playlistfeatures[index] += slider_values[index]
+        print("after adding sliders: ", playlistfeatures)
                 
     all_songs_df['genres'] = all_songs_df['genres'].apply(ast.literal_eval)
     # Find cosine similarity between the playlist and the complete song set
@@ -222,7 +220,6 @@ def get_recommendations(id, slider_values):
         recommendations_dict[track_name] = artist_name
             
     return recommendations_dict, song_ids_list
-
 
 
 @app.route('/playlist/<string:id>')
@@ -282,7 +279,8 @@ def recommendations_page(id):
     
     # getting recommendations and returning them to the recommendations.html page
     recommendations_dict, song_ids_list = get_recommendations(id, slider_values)
-    return render_template('recommendations.html', recommendations_dict = recommendations_dict, song_ids_list = song_ids_list )
+    return render_template('recommendations.html', id = id, recommendations_dict = recommendations_dict, song_ids_list = song_ids_list )
+
 
 @app.route('/create_playlist', methods=['POST'])
 def create_playlist():
@@ -295,23 +293,45 @@ def create_playlist():
         return redirect("/")
     
     sp = spotipy.Spotify(auth=token_info['access_token'])
-    
     song_ids = request.form.getlist('song_ids[]')
     print('Song IDs:', song_ids)
+    print("request.form: ", request.form)
     
-    try:
-        username = sp.current_user()['id']
+    if 'add-to-playlist-btn' in request.form:
+        try:
+            username = sp.current_user()['id']
 
-        # Create a new playlist
-        playlist = sp.user_playlist_create(user=username, name="BetterRecs. Playlist", public=True)
-        
-        sp.playlist_add_items(playlist['id'], song_ids)
-        
-        return "Playlist created successfully!"
+            playlist = sp.user_playlist_create(user=username, name="BetterRecs. Playlist", public=True)
+            
+            sp.playlist_add_items(playlist['id'], song_ids)
+            
+            return "Playlist created successfully!"
 
-    except SpotifyException as e:
-        # Handle Spotify API exception
-        return f"Error Creating Playlist: {e}"
+        except SpotifyException as e:
+            # Handle Spotify API exception
+            return f"Error Creating Playlist: {e}"
+        
+    elif 'regenerate-btn' in request.form:
+        id = request.form.get('id')
+        print(id)
+        recommendations_dict, song_ids_list = get_recommendations(id)
+        return render_template('recommendations.html', id = id, recommendations_dict = recommendations_dict, song_ids_list = song_ids_list )
+
+    return "ERROR: Unknown Action"
+
+"""
+@app.route('/regenerate')
+def regenerate():
+    
+    id = request.args.get('id')
+    recommendations_dict_str = request.args.get('recommendations_dict')
+    song_ids_list_str = request.args.get('song_ids_list')
+    
+    recommendations_dict = json.loads(recommendations_dict_str)
+    song_ids_list = json.loads(song_ids_list_str)
+
+    return render_template('recommendations.html', id = id, recommendations_dict = recommendations_dict, song_ids_list = song_ids_list )
+"""
             
 # function to get the token info from the session
 def get_token():
@@ -330,6 +350,7 @@ def get_token():
 
     return token_info
 
+
 def create_spotify_oauth():
     #create the client id, secret, redirect uri and scope for login
     return SpotifyOAuth(
@@ -338,5 +359,5 @@ def create_spotify_oauth():
         redirect_uri = url_for('redirect_page', _external=True),
         scope='user-library-read playlist-modify-public playlist-modify-private'
     )
-    
+
 app.run(debug=True)
