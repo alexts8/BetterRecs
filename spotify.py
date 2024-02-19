@@ -89,7 +89,7 @@ def view_playlists():
     return render_template('playlist_list.html', pl=user_pl, images=images)
 
 
-def get_recommendations(id, slider_values=None):
+def get_recommendations(id, slider_values=None, song_ids=None):
     try: 
         # get the token info from the session
         token_info = get_token()
@@ -101,15 +101,22 @@ def get_recommendations(id, slider_values=None):
     # generate the access token to make an instance of the spotipy object
     sp = spotipy.Spotify(auth=token_info['access_token'])
     tracks_data = []
+
     genres_list = []
     
     # get the playlist
     playlist = sp.playlist_tracks(id)
     
+    track_ids = [track['track']['id'] for track in playlist['items']]
+    if song_ids:
+        for id in song_ids:
+            track_ids.append(id)
+    print(track_ids)
+    
     def get_genres(track_id):
         # Get track information
         track_info = sp.track(track_id)
-                    
+        
         # Get the list of genres for the first artist of the track
         if 'artists' in track_info and track_info['artists']:
             artist_id = track_info['artists'][0]['id']
@@ -119,6 +126,47 @@ def get_recommendations(id, slider_values=None):
                 return artist_info['genres']
                     
         return None
+    
+    for track in track_ids:
+        track_data = {
+                'danceability': None,
+                'energy': None,
+                'loudness': None,
+                'speechiness': None,
+                'acousticness': None,
+                'instrumentalness': None,
+                'liveness': None,
+                'valence': None,
+                'tempo': None,
+                'genres': None,
+                'track_pop': None,
+                'id': track
+            }
+        
+
+        # populate the array with audio features of each track
+        audio_features = sp.audio_features(track)[0]
+        if audio_features:
+            track_data['danceability'] = audio_features['danceability']
+            track_data['energy'] = audio_features['energy']
+            track_data['loudness'] = audio_features['loudness']
+            track_data['speechiness'] = audio_features['speechiness']
+            track_data['acousticness'] = audio_features['acousticness']
+            track_data['instrumentalness'] = audio_features['instrumentalness']
+            track_data['liveness'] = audio_features['liveness']
+            track_data['valence'] = audio_features['valence']
+            track_data['tempo'] = audio_features['tempo']
+            genres = get_genres(track)
+            for genre in genres:
+                genres_list.append(genre)
+            genres_list = list(set(genres_list))
+            track_info = sp.track(track)
+            popularity = track_info['popularity']
+            track_data['track_pop'] = popularity
+            print("adding: ", track_data)
+            
+        tracks_data.append(track_data)
+        
 
     # create a track_data array
     for track in playlist['items']:
@@ -137,7 +185,7 @@ def get_recommendations(id, slider_values=None):
                 'id': track['track']['id']
             }
         
-
+        """
         # populate the array with audio features of each track
         audio_features = sp.audio_features([track['track']['uri']])[0]
         if audio_features:
@@ -158,8 +206,10 @@ def get_recommendations(id, slider_values=None):
             track_info = sp.track(track_id)
             popularity = track_info['popularity']
             track_data['track_pop'] = popularity
+            print(track_data)
             
         tracks_data.append(track_data)
+        """
 
     # turn array into a pandas dataframe
     playlist_features = pd.DataFrame(tracks_data)
@@ -295,7 +345,6 @@ def create_playlist():
     sp = spotipy.Spotify(auth=token_info['access_token'])
     song_ids = request.form.getlist('song_ids[]')
     print('Song IDs:', song_ids)
-    print("request.form: ", request.form)
     
     if 'add-to-playlist-btn' in request.form:
         try:
@@ -312,12 +361,20 @@ def create_playlist():
             return f"Error Creating Playlist: {e}"
         
     elif 'regenerate-btn' in request.form:
+        
         id = request.form.get('id')
-        print(id)
-        recommendations_dict, song_ids_list = get_recommendations(id)
-        return render_template('recommendations.html', id = id, recommendations_dict = recommendations_dict, song_ids_list = song_ids_list )
+        recommendations_dict, song_ids_list = get_recommendations(id, None, song_ids)
+        
+        response_data = {
+        'id': id,
+        'recommendations_dict': recommendations_dict,
+        'song_ids_list': song_ids_list
+        }
+
+        return jsonify(response_data)
 
     return "ERROR: Unknown Action"
+
 
 """
 @app.route('/regenerate')
@@ -332,6 +389,7 @@ def regenerate():
 
     return render_template('recommendations.html', id = id, recommendations_dict = recommendations_dict, song_ids_list = song_ids_list )
 """
+       
             
 # function to get the token info from the session
 def get_token():

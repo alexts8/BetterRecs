@@ -9,6 +9,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <div id="loading-screen" style="display: none;">
+    <div id="loading-spinner"></div>
+  </div>
   <header>
   <h1> BetterRecs. </h1>
   <div class = "nav-buttons">
@@ -21,7 +24,7 @@
     <h1 id = "recommendations-header">Your Recommendations</h1>
     <form id  ="playlist-form" method="post" action="/create_playlist">
       <div class="table-container">
-        <table>
+        <table id = "recommendations-table">
           <tr>
             <th>Artist Name</th>
             <th>Song Name</th>
@@ -33,7 +36,7 @@
           <tr>
             <td>{{ artist }}</td>
             <td>{{ song }}</td>
-            <td><button id = "listen-button" onclick="window.open('https://open.spotify.com/track/{{ id }}', '_blank')">Listen Here</button></td>
+            <td><button type="button" id = "listen-button" onclick="window.open('https://open.spotify.com/track/{{ id }}', '_blank')">Listen Here</button></td>
             <td id="checkbox-td"><input id ="checkbox" type="checkbox" name="song_ids[]" value="{{ id }}"></td>
           </tr>
           {% endfor %}
@@ -53,6 +56,9 @@
       $('.recommendations-actions').click(function(e) {
         e.preventDefault(); 
         var buttonName = $(this).attr('name');
+        if (buttonName === 'regenerate-btn') {
+          $('#loading-screen').show();
+        }
         var id = "{{ id }}";
         var formData = $('#playlist-form').serialize() + '&' + buttonName + '=1&id=' + id;
         $.ajax({
@@ -64,7 +70,11 @@
               $('#message-container').text(response); 
             }
             else if (buttonName === 'regenerate-btn') {
-              document.documentElement.innerHTML = response;
+              $('#loading-screen').hide();
+              var id = response.id;
+              var recommendations_dict = response.recommendations_dict;
+              var song_ids_list = response.song_ids_list;
+              updateTable(recommendations_dict, song_ids_list);
             }
           },
           error: function(error) {
@@ -73,9 +83,18 @@
         });
       });
     });
-  </script>
-  
 
+    function updateTable(recommendations_dict, song_ids_list) {
 
+      $('#recommendations-table').empty();
+      $('#recommendations-table').append('<tr><th>Artist Name</th><th>Song Name</th><th>Listen</th><th>Select</th></tr>');
+      
+      $.each(recommendations_dict, function(artist, song) {
+          var id = song_ids_list[Object.keys(recommendations_dict).indexOf(artist)];
+          var row = '<tr><td>' + artist + '</td><td>' + song + '</td><td><button type="button" id="listen-button" onclick="window.open(\'https://open.spotify.com/track/' + id + '\', \'_blank\')">Listen Here</button></td><td id="checkbox-td"><input id="checkbox" type="checkbox" name="song_ids[]" value="' + id + '"></td></tr>';
+          $('#recommendations-table').append(row);
+      });
+    }
+ </script>
 </body>
 </html>
