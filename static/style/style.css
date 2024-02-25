@@ -310,3 +310,29 @@ th{
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+#deselect-all-btn{
+    margin: 5px;
+    padding: 10px;
+    background-color: rgb(227, 218, 218); 
+    border: none;
+    border-radius: 25px;
+    font-family: 'Outfit', sans-serif;
+}
+
+#deselect-all-btn:hover{
+    background-color: rgb(192, 184, 184); 
+}
+
+#select-all-btn{
+    margin: 5px;
+    padding: 10px;
+    background-color: rgb(227, 218, 218); 
+    border: none;
+    border-radius: 25px;
+    font-family: 'Outfit', sans-serif;
+}
+
+#select-all-btn:hover{
+    background-color: rgb(192, 184, 184); 
+}

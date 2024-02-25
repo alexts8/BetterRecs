@@ -163,11 +163,9 @@ def get_recommendations(id, slider_values=None, song_ids=None):
             track_info = sp.track(track)
             popularity = track_info['popularity']
             track_data['track_pop'] = popularity
-            print("adding: ", track_data)
             
         tracks_data.append(track_data)
         
-
     # create a track_data array
     for track in playlist['items']:
         track_data = {
@@ -185,32 +183,6 @@ def get_recommendations(id, slider_values=None, song_ids=None):
                 'id': track['track']['id']
             }
         
-        """
-        # populate the array with audio features of each track
-        audio_features = sp.audio_features([track['track']['uri']])[0]
-        if audio_features:
-            track_data['danceability'] = audio_features['danceability']
-            track_data['energy'] = audio_features['energy']
-            track_data['loudness'] = audio_features['loudness']
-            track_data['speechiness'] = audio_features['speechiness']
-            track_data['acousticness'] = audio_features['acousticness']
-            track_data['instrumentalness'] = audio_features['instrumentalness']
-            track_data['liveness'] = audio_features['liveness']
-            track_data['valence'] = audio_features['valence']
-            track_data['tempo'] = audio_features['tempo']
-            track_id = track['track']['id']
-            genres = get_genres(track_id)
-            for genre in genres:
-                genres_list.append(genre)
-            genres_list = list(set(genres_list))
-            track_info = sp.track(track_id)
-            popularity = track_info['popularity']
-            track_data['track_pop'] = popularity
-            print(track_data)
-            
-        tracks_data.append(track_data)
-        """
-
     # turn array into a pandas dataframe
     playlist_features = pd.DataFrame(tracks_data)
         
@@ -269,7 +241,7 @@ def get_recommendations(id, slider_values=None, song_ids=None):
         # Store track name and artist in the dictionary
         recommendations_dict[track_name] = artist_name
             
-    return recommendations_dict, song_ids_list
+    return recommendations_dict, song_ids_list, genres_list
 
 
 @app.route('/playlist/<string:id>')
@@ -328,8 +300,8 @@ def recommendations_page(id):
     }
     
     # getting recommendations and returning them to the recommendations.html page
-    recommendations_dict, song_ids_list = get_recommendations(id, slider_values)
-    return render_template('recommendations.html', id = id, recommendations_dict = recommendations_dict, song_ids_list = song_ids_list )
+    recommendations_dict, song_ids_list, genres = get_recommendations(id, slider_values)
+    return render_template('recommendations.html', id = id, recommendations_dict = recommendations_dict, song_ids_list = song_ids_list, genres=genres )
 
 
 @app.route('/create_playlist', methods=['POST'])
@@ -363,7 +335,7 @@ def create_playlist():
     elif 'regenerate-btn' in request.form:
         
         id = request.form.get('id')
-        recommendations_dict, song_ids_list = get_recommendations(id, None, song_ids)
+        recommendations_dict, song_ids_list, genres = get_recommendations(id, None, song_ids)
         
         response_data = {
         'id': id,
@@ -375,21 +347,6 @@ def create_playlist():
 
     return "ERROR: Unknown Action"
 
-
-"""
-@app.route('/regenerate')
-def regenerate():
-    
-    id = request.args.get('id')
-    recommendations_dict_str = request.args.get('recommendations_dict')
-    song_ids_list_str = request.args.get('song_ids_list')
-    
-    recommendations_dict = json.loads(recommendations_dict_str)
-    song_ids_list = json.loads(song_ids_list_str)
-
-    return render_template('recommendations.html', id = id, recommendations_dict = recommendations_dict, song_ids_list = song_ids_list )
-"""
-       
             
 # function to get the token info from the session
 def get_token():
@@ -412,8 +369,8 @@ def get_token():
 def create_spotify_oauth():
     #create the client id, secret, redirect uri and scope for login
     return SpotifyOAuth(
-        client_id = '6584944ee0d9495480193d9997a9efb7',
-        client_secret = 'ac4205f012b64179acd46c0fbdb33f36',
+        client_id = 'ac6f1f1226104632a114669a4b2fc962',
+        client_secret = 'b942dbcd77234e9f809564415f95c7e6',
         redirect_uri = url_for('redirect_page', _external=True),
         scope='user-library-read playlist-modify-public playlist-modify-private'
     )

@@ -23,6 +23,8 @@
   <div class="container">
     <h1 id = "recommendations-header">Your Recommendations</h1>
     <form id  ="playlist-form" method="post" action="/create_playlist">
+    <button type="button" id="select-all-btn">Select All</button>
+    <button type="button" id="deselect-all-btn">Deselect All</button>
       <div class="table-container">
         <table id = "recommendations-table">
           <tr>
@@ -50,8 +52,52 @@
   </div>
   </form>
 
+
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
+
+    // Store variables needed to construct API call
+    const apiUrl = 'https://app.ticketmaster.com/discovery/v2/events';
+    var ticketmasterKey = 'HiDTN23YtaND8fPkw9DOmTsd8yhzRFfg';
+    var genres = {{ genres | tojson }};
+    console.log(genres);
+
+    function fetchEventData() {
+      const url = `${apiUrl}?apikey=${ticketmasterKey}&keyword=music&city=Dublin`;
+    
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          displayEventData(data);
+        })
+        .catch(error => {
+          console.error('There was a problem fetching event data:', error);
+        });
+    }
+    
+    function displayEventData(data) {
+      const events = data._embedded.events;
+    
+      events.forEach(event => {
+        const eventName = event.name;
+        const eventDate = event.dates.start.localDate;
+        const venueName = event._embedded.venues[0].name;
+    
+        console.log(`Event: ${eventName}, Date: ${eventDate}, Venue: ${venueName}`);
+      });
+    }
+
+    fetchEventData();
+
+
+
+ 
+    // Handling recommendation regeneraton with an asynchronous AJAX call
     $(document).ready(function() {
       $('.recommendations-actions').click(function(e) {
         e.preventDefault(); 
@@ -84,17 +130,36 @@
       });
     });
 
+    // Update recommendations with response data
     function updateTable(recommendations_dict, song_ids_list) {
-
       $('#recommendations-table').empty();
       $('#recommendations-table').append('<tr><th>Artist Name</th><th>Song Name</th><th>Listen</th><th>Select</th></tr>');
-      
       $.each(recommendations_dict, function(artist, song) {
           var id = song_ids_list[Object.keys(recommendations_dict).indexOf(artist)];
           var row = '<tr><td>' + artist + '</td><td>' + song + '</td><td><button type="button" id="listen-button" onclick="window.open(\'https://open.spotify.com/track/' + id + '\', \'_blank\')">Listen Here</button></td><td id="checkbox-td"><input id="checkbox" type="checkbox" name="song_ids[]" value="' + id + '"></td></tr>';
           $('#recommendations-table').append(row);
       });
     }
+
+
+    // Event listeners for select/deselect all buttons
+    var checkboxes = document.querySelectorAll('#checkbox');
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("select-all-btn").addEventListener("click", function() {
+        checkboxes.forEach(function(checkbox) {
+          checkbox.checked = true; 
+        });
+      });
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("deselect-all-btn").addEventListener("click", function() {
+        checkboxes.forEach(function(checkbox) {
+          checkbox.checked = false; 
+        });
+      });
+    });
+
  </script>
 </body>
 </html>
