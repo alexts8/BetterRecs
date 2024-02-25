@@ -218,6 +218,13 @@ ul li a:hover {
     text-align: center;
 }
 
+#recommendations-subheader{
+    margin-top: 5px;
+    margin-left: 20px;
+    text-align: center;
+}
+
+
 .recommendations-actions{
     padding: 15px;
     margin-left:10px;
@@ -261,7 +268,7 @@ th{
 }
 
 #listen-button{
-    padding: 10px;
+    padding: 7px;
     background-color: rgb(227, 218, 218); 
     border: none;
     border-radius: 25px;
