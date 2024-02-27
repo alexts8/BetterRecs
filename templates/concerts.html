@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <title>Recommendations</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="loading-screen" style="display: none;">
+    <div id="loading-spinner"></div>
+  </div>
+  <header>
+  <h1> BetterRecs. </h1>
+  <div class = "nav-buttons">
+    <button onclick="location.href='{{ url_for('redirect_page') }}'">Home</button>
+    <button>About</button>
+    <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
+  </div>
+  </header>
+  <div class="container">
+    <h1 id = "recommendations-header">Concerts For You</h1>
+    <h3 id = "recommendations-subheader">View events you may like, and buy tickets!</h3>
+    <div class="table-container">
+      <table id="events-table">
+        <thead>
+          <tr>
+            <th>Event Name</th>
+            <th>Date</th>
+            <th>Venue</th>
+            <th>Get Tickets</th>
+          </tr>
+        </thead>
+        <tbody id="events-table-body">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition, showError);
+        } else {
+            console.log("Geolocation is not supported by this browser.");
+        }
+    }
+    
+    function showPosition(position) {
+        var latitude = position.coords.latitude;
+        var longitude = position.coords.longitude;
+        generateGeohash(latitude, longitude)
+        .then(geohash => {
+            fetchEventData(geohash);
+        })
+        .catch(error => {
+            console.error('Error generating geohash:', error);
+        });
+    }
+    
+    function showError(error) {
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                console.log("User denied the request for Geolocation.");
+                break;
+            case error.POSITION_UNAVAILABLE:
+                console.log("Location information is unavailable.");
+                break;
+            case error.TIMEOUT:
+                console.log("The request to get user location timed out.");
+                break;
+            case error.UNKNOWN_ERROR:
+                console.log("An unknown error occurred.");
+                break;
+        }
+    }
+    
+    // Store variables needed to construct API call
+    const apiUrl = 'https://app.ticketmaster.com/discovery/v2/events';
+    var ticketmasterKey = 'HiDTN23YtaND8fPkw9DOmTsd8yhzRFfg';
+    
+    var genresList = {{ genres_list | tojson }};
+    function fetchEventData(geohash) {
+        console.log("in events: ", geohash)
+        genresList.forEach(genre => {
+            const url = `${apiUrl}?apikey=${ticketmasterKey}&classificationName=${genre}&geoPoint=${geohash}`;
+            fetch(url)
+                .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+                })
+                .then(data => {
+                    console.log("for genre: ",genre, data._embedded.events)
+                    displayEventData(data);
+                })
+                .catch(error => {
+                    console.error('There was a problem fetching event data:',genre, error);
+                    displayEventData({ _embedded: { events: [] } });
+                });
+            
+            });
+        }
+    
+    function displayEventData(data) {
+        if (!data._embedded || !data._embedded.events) {
+            console.log('No events found for this genre.');
+            return;
+          }
+        const events = data._embedded.events;
+        const tableBody = document.getElementById('events-table-body');
+    
+        events.forEach(event => {
+            const eventName = event.name;
+            const eventDate = event.dates.start.localDate;
+            const venueName = event._embedded.venues[0].name;
+            const eventUrl = event.url;
+        
+            console.log(`Event: ${eventName}, Date: ${eventDate}, Venue: ${venueName}`);
+    
+            const row = document.createElement('tr');
+        
+            const nameCell = document.createElement('td');
+            nameCell.textContent = eventName;
+            row.appendChild(nameCell);
+    
+            const dateCell = document.createElement('td');
+            dateCell.textContent = eventDate;
+            row.appendChild(dateCell);
+    
+            const venueCell = document.createElement('td');
+            venueCell.textContent = venueName;
+            row.appendChild(venueCell);
+    
+            const buttonCell = document.createElement('td');
+            const button = document.createElement('button');
+            button.textContent = 'View Event';
+            button.onclick = function() {
+            window.open(eventUrl, '_blank');
+            };
+            button.id = 'listen-button';
+            buttonCell.appendChild(button);
+            row.appendChild(buttonCell);
+    
+            tableBody.appendChild(row);
+      });
+    }
+    
+    function generateGeohash(latitude, longitude, precision) {
+        return new Promise((resolve, reject) => {
+            fetch('/geohash', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ latitude: latitude, longitude: longitude })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Generated Geohash:', data.geohash);
+                resolve(data.geohash); 
+            })
+            .catch(error => {
+                console.error('Error generating geohash:', error);
+                reject(error); 
+            });
+        });
+    }
+    
+    getLocation();
+    
+    
+    
+
+ </script>
+</body>
+</html>

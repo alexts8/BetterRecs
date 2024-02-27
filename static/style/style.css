@@ -5,7 +5,7 @@ body, h1, h2, ul {
 
 body {
     font-family: 'Outfit', sans-serif;
-    background-color: #f8f8f8;
+    background-color: #b6f1c2;
     color: #333;
 }
 
@@ -166,7 +166,6 @@ ul li a:hover {
 .change-mood-text{
     float:left;
     width:33%;
-    height: 100vh;
     padding-top: 8%;
 }
 
@@ -190,9 +189,10 @@ ul li a:hover {
     display: flex;
     justify-content: center;
     align-items: center;
+    text-align: center;
 }
 
-#submit{
+.generate-btn{
     background-color: #1DB954;
     color: white; 
     border: none;
@@ -205,10 +205,33 @@ ul li a:hover {
     height: 80%;
 }
 
-#submit:hover {
+.generate-btn:hover {
     background-color: #1aab4d; 
 }
 
+.events-div{
+    display: flex;
+    justify-content: space-between;
+}
+
+.event-text-container{
+    width: 33%;
+    text-align: center;
+}
+
+.event-text-container h1{
+    text-align: center;
+    font-size: 60px;
+}
+
+.event-button-container{
+    text-align: center;
+    width: 66%;
+}
+
+.event-button-container button{
+    width: 100%;
+}
 
 /* css specific to recommendations.html */
 
@@ -252,7 +275,6 @@ table {
 .table-container {
     height: 70vh;
     overflow-y: auto; 
-    border: 1px solid rgb(192, 184, 184);
 }
   
 td{
@@ -277,10 +299,6 @@ th{
 
 #listen-button:hover{
     background-color: rgb(192, 184, 184); 
-}
-
-.button-container{
-    text-align: center;
 }
 
 #checkbox-td{
@@ -343,3 +361,4 @@ th{
 #select-all-btn:hover{
     background-color: rgb(192, 184, 184); 
 }
+

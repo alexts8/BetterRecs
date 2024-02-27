@@ -2,6 +2,7 @@
 import ast
 import json
 import time
+import geohash2
 from sklearn.preprocessing import MinMaxScaler
 import spotipy
 import os
@@ -244,6 +245,7 @@ def get_recommendations(id, slider_values=None, song_ids=None):
     return recommendations_dict, song_ids_list, genres_list
 
 
+
 @app.route('/playlist/<string:id>')
 def playlist_page(id):
     try: 
@@ -304,6 +306,73 @@ def recommendations_page(id):
     return render_template('recommendations.html', id = id, recommendations_dict = recommendations_dict, song_ids_list = song_ids_list, genres=genres )
 
 
+def get_concerts(id):
+    try: 
+        # get the token info from the session
+        token_info = get_token()
+    except:
+       # if the token info is not found, redirect the user to the login route
+        print('User not logged in')
+        return redirect("/")
+
+    # generate the access token to make an instance of the spotipy object
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    genres_list = []
+    
+    # get the playlist
+    playlist = sp.playlist_tracks(id)
+    
+    track_ids = [track['track']['id'] for track in playlist['items']]
+    
+    def get_genres(track_id):
+        # Get track information
+        track_info = sp.track(track_id)
+        
+        # Get the list of genres for the first artist of the track
+        if 'artists' in track_info and track_info['artists']:
+            artist_id = track_info['artists'][0]['id']
+            artist_info = sp.artist(artist_id)
+                        
+            if 'genres' in artist_info:
+                return artist_info['genres']
+                    
+        return None
+    
+    for track in track_ids:
+        genres = get_genres(track)
+        for genre in genres:
+            genres_list.append(genre)
+        genres_list = list(set(genres_list))
+    
+    return genres_list
+
+@app.route('/geohash', methods=['POST'])
+def generate_geohash():
+    data = request.json
+    latitude = data['latitude']
+    longitude = data['longitude']
+    precision = 9
+
+    geohash = geohash2.encode(latitude, longitude, precision)
+    return {'geohash': geohash}
+            
+
+@app.route('/getConcerts/<string:id>',  methods=['GET', 'POST'])
+def get_concerts_pg(id):
+    try: 
+        # get the token info from the session
+        token_info = get_token()
+    except:
+        # if the token info is not found, redirect the user to the login route
+        print('User not logged in')
+        return redirect("/")
+    
+    genres_list = get_concerts(id)
+
+    return render_template("concerts.html", genres_list = genres_list)
+
+
+
 @app.route('/create_playlist', methods=['POST'])
 def create_playlist():
     try: 
@@ -318,6 +387,9 @@ def create_playlist():
     song_ids = request.form.getlist('song_ids[]')
     print('Song IDs:', song_ids)
     
+    if len(song_ids) == 0:
+        return "Select at least one song to add!"
+        
     if 'add-to-playlist-btn' in request.form:
         try:
             username = sp.current_user()['id']

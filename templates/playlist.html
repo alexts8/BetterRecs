@@ -8,61 +8,76 @@
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&display=swap" rel="stylesheet">
  </head>
- <body>
-    <header>
-      <h1> BetterRecs. </h1>
-      <div class = "nav-buttons">
-        <button onclick="location.href='{{ url_for('redirect_page') }}'">Home</button>
-        <button>About</button>
-        <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
-      </div>
-    </header>
-      <div class="container">
-        <h1>{{pname}}</h1>
-        {% if psongs is defined and psongs|length > 0 %}
-        <h2>Songs in Playlist:</h2>
-        <div class = "scroll-list">
-          <ul>
-              {% for song in psongs%}
-                <li>{{ song['track']['name'] }} - {{ song['track']['artists'][0]['name'] }}</li>
-              {% endfor %}
-          </ul>
+
+  <body>
+      <header>
+        <h1> BetterRecs. </h1>
+        <div class = "nav-buttons">
+          <button onclick="location.href='{{ url_for('redirect_page') }}'">Home</button>
+          <button>About</button>
+          <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
         </div>
-      {% else %}
-        <p>No songs found!</p>
-      {% endif %}
+      </header>
+        <div class="container">
+          <h1>{{pname}}</h1>
+          {% if psongs is defined and psongs|length > 0 %}
+          <h2>Songs in Playlist:</h2>
+          <div class = "scroll-list">
+            <ul>
+                {% for song in psongs%}
+                  <li>{{ song['track']['name'] }} - {{ song['track']['artists'][0]['name'] }}</li>
+                {% endfor %}
+            </ul>
+          </div>
+        {% else %}
+          <p>No songs found!</p>
+        {% endif %}
+        </div>
+
+      <div class="container">
+          <div class = "change-mood-text">
+            <h1>Change</h1>
+            <h1>The</h1>
+            <h1 style = "color: #1DB954">Mood</h1>
+          </div>
+          <div class="change-mood-right">
+            <div class="sliders-container">
+              <form action='/getRecommendations/{{id}}' method="post">
+                <p>Happiness</p>
+                <input type="range" id="slider1" name="slider1" min="-1" max="1" step="0.01" value="0">
+          
+                <p>Danceability</p>
+                <input type="range" id="slider2" name="slider2" min="-1" max="1" step="0.01" value="0">
+          
+                <p>Energy</p>
+                <input type="range" id="slider3" name="slider3" min="-1" max="1" step="0.01" value="0">
+          
+                <p>Loudness</p>
+                <input type="range" id="slider4" name="slider4" min="-1" max="1" step="0.01" value="0">
+          
+                <p>Tempo</p>
+                <input type="range" id="slider5" name="slider5" min="-50" max="50" step="1" value="0">
+              
+            </div>
+            <div class="button-container">
+              <button class="generate-btn" type="submit">Generate Song Recommendations</button>
+            </form>
+            </div>
+          </div>
       </div>
 
     <div class="container">
-        <div class = "change-mood-text">
-          <h1>Change</h1>
-          <h1>The</h1>
-          <h1 style = "color: #1DB954">Mood</h1>
+      <div class = "events-div">
+        <div class = "event-text-container">
+          <h1>Events</h1>
+          <h1>For</h1>
+          <h1 style = "color: #1DB954">You</h1>
         </div>
-        <div class="change-mood-right">
-          <div class="sliders-container">
-            <form action='/getRecommendations/{{id}}' method="post">
-              <p>Happiness</p>
-              <input type="range" id="slider1" name="slider1" min="-1" max="1" step="0.01" value="0">
-        
-              <p>Danceability</p>
-              <input type="range" id="slider2" name="slider2" min="-1" max="1" step="0.01" value="0">
-        
-              <p>Energy</p>
-              <input type="range" id="slider3" name="slider3" min="-1" max="1" step="0.01" value="0">
-        
-              <p>Loudness</p>
-              <input type="range" id="slider4" name="slider4" min="-1" max="1" step="0.01" value="0">
-        
-              <p>Tempo</p>
-              <input type="range" id="slider5" name="slider5" min="-50" max="50" step="1" value="0">
-            
-          </div>
-          <div class="button-container">
-            <button id="submit" type="submit">Generate Recommendations</button>
-          </form>
-          </div>
+        <div class = "event-button-container">
+          <button class="generate-btn" onclick="location.href='{{ url_for('get_concerts_pg', id=id) }}'">Generate Concert Recommendations</button>
         </div>
-  </div>
- </body>
+      </div>
+    </div>
+  
+  </body>
 </html>

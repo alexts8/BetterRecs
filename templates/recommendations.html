@@ -22,7 +22,7 @@
   </header>
   <div class="container">
     <h1 id = "recommendations-header">Your Recommendations</h1>
-    <h3 id = "recommendations-subheader">Select Some songs you like, and add them to a playlist, or regenerate more songs like them!</h3>
+    <h3 id = "recommendations-subheader">Select some songs you like, and add them to a playlist, or regenerate more songs like them!</h3>
     <form id  ="playlist-form" method="post" action="/create_playlist">
     <button type="button" id="select-all-btn">Select All</button>
     <button type="button" id="deselect-all-btn">Deselect All</button>
@@ -48,23 +48,6 @@
     </div>
   </div>
   
-  <div class = "container">
-    <h1 id = "recommendations-header">Concerts For You</h1>
-    <div class="table-container">
-      <table id="events-table">
-        <thead>
-          <tr>
-            <th>Event Name</th>
-            <th>Date</th>
-            <th>Venue</th>
-            <th>Get Tickets</th>
-          </tr>
-        </thead>
-        <tbody id="events-table-body">
-        </tbody>
-      </table>
-    </div>
-  </div>
   <div class="container">
     <button class="recommendations-actions" type="submit" name="add-to-playlist-btn">Add To Playlist</button>
     <button class="recommendations-actions" type="submit" name="regenerate-btn">Regenerate</button>
@@ -76,77 +59,6 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
 
-    // Store variables needed to construct API call
-    const apiUrl = 'https://app.ticketmaster.com/discovery/v2/events';
-    var ticketmasterKey = 'HiDTN23YtaND8fPkw9DOmTsd8yhzRFfg';
-    var genres = {{ genres | tojson }};
-    console.log(genres);
-
-    function fetchEventData() {
-      const url = `${apiUrl}?apikey=${ticketmasterKey}&keyword=Rock&city=Dublin`;
-    
-      fetch(url)
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          displayEventData(data);
-        })
-        .catch(error => {
-          console.error('There was a problem fetching event data:', error);
-        });
-    }
-    
-    function displayEventData(data) {
-      const events = data._embedded.events;
-
-      const tableBody = document.getElementById('events-table-body');
-      tableBody.innerHTML = '';
-
-      events.forEach(event => {
-        const eventName = event.name;
-        const eventDate = event.dates.start.localDate;
-        const venueName = event._embedded.venues[0].name;
-        const eventUrl = event.url;
-    
-        console.log(`Event: ${eventName}, Date: ${eventDate}, Venue: ${venueName}`);
-
-        const row = document.createElement('tr');
-    
-        const nameCell = document.createElement('td');
-        nameCell.textContent = eventName;
-        row.appendChild(nameCell);
-
-        const dateCell = document.createElement('td');
-        dateCell.textContent = eventDate;
-        row.appendChild(dateCell);
-
-        const venueCell = document.createElement('td');
-        venueCell.textContent = venueName;
-        row.appendChild(venueCell);
-
-        const buttonCell = document.createElement('td');
-        const button = document.createElement('button');
-        button.textContent = 'View Event';
-        button.onclick = function() {
-          window.open(eventUrl, '_blank');
-        };
-        button.id = 'listen-button';
-        buttonCell.appendChild(button);
-        row.appendChild(buttonCell);
-
-        tableBody.appendChild(row);
-      });
-    }
-
-    fetchEventData();
-
-
-
- 
     // Handling recommendation regeneraton with an asynchronous AJAX call
     $(document).ready(function() {
       $('.recommendations-actions').click(function(e) {
