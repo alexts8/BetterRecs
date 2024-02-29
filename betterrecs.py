@@ -241,6 +241,9 @@ def get_recommendations(id, slider_values=None, song_ids=None):
 
         # Store track name and artist in the dictionary
         recommendations_dict[track_name] = artist_name
+        
+    print(song_ids_list[0])
+    print(next(iter(recommendations_dict.items())))
             
     return recommendations_dict, song_ids_list, genres_list
 
@@ -407,7 +410,10 @@ def create_playlist():
     elif 'regenerate-btn' in request.form:
         
         id = request.form.get('id')
-        recommendations_dict, song_ids_list, genres = get_recommendations(id, None, song_ids)
+        recommendations, song_ids_list, genres = get_recommendations(id, None, song_ids)
+        
+        #convert to lst of tuples to maintain order
+        recommendations_dict = list(recommendations.items())
         
         response_data = {
         'id': id,

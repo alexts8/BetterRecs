@@ -86,9 +86,10 @@
     
     var genresList = {{ genres_list | tojson }};
     function fetchEventData(geohash) {
-        console.log("in events: ", geohash)
         genresList.forEach(genre => {
-            const url = `${apiUrl}?apikey=${ticketmasterKey}&classificationName=${genre}&geoPoint=${geohash}`;
+            console.log("for genre ",genre," with geohash ", geohash)
+            const url = `${apiUrl}?apikey=${ticketmasterKey}&classificationName=${genre}&geoPoint=${geohash}&radius=50`;
+            console.log("for url ",url)
             fetch(url)
                 .then(response => {
                 if (!response.ok) {
@@ -121,8 +122,6 @@
             const eventDate = event.dates.start.localDate;
             const venueName = event._embedded.venues[0].name;
             const eventUrl = event.url;
-        
-            console.log(`Event: ${eventName}, Date: ${eventDate}, Venue: ${venueName}`);
     
             const row = document.createElement('tr');
         
