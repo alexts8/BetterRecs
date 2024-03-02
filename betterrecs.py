@@ -198,24 +198,7 @@ def get_recommendations(id, slider_values=None, song_ids=None):
     file_path = os.path.join(current_dir, relative_path)
 
     if 'all_songs_df' not in globals():
-        host = 'fyp-db.cpc2i6c84e9b.eu-west-1.rds.amazonaws.com'  
-        port = 3306
-        database = 'fypdatabase'
-        username = 'admin'
-        password = 'fypdatabase'
-
-        current_dir = os.getcwd()
-
-        # Establish a connection
-        conn = pymysql.connect(host=host, port=port, user=username, password=password, database=database)
-        cursor = conn.cursor()
-        print("getting df from database...")
-        cursor.execute("SELECT danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, track_pop, artists, genres, id FROM Music WHERE genres != '[]'")
-        rows = cursor.fetchall()
-        cursor.close()
-        print("done")
-        global all_songs_df
-        all_songs_df = pd.DataFrame(rows, columns=['danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'track_pop', 'artists', 'genres','id'])
+        create_all_songs_df()
         
     # get the current directory and the relative path to find the csv file
     # this is a workaround before the database is implemented
@@ -272,6 +255,26 @@ def get_recommendations(id, slider_values=None, song_ids=None):
     print(next(iter(recommendations_dict.items())))
             
     return recommendations_dict, song_ids_list, genres_list
+
+
+def create_all_songs_df():
+        host = 'fyp-db.cpc2i6c84e9b.eu-west-1.rds.amazonaws.com'  
+        port = 3306
+        database = 'fypdatabase'
+        username = 'admin'
+        password = 'fypdatabase'
+
+        # Establish a connection
+        conn = pymysql.connect(host=host, port=port, user=username, password=password, database=database)
+        cursor = conn.cursor()
+        print("getting df from database...")
+        cursor.execute("SELECT danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, track_pop, artists, genres, id FROM Music WHERE genres != '[]'")
+        rows = cursor.fetchall()
+        cursor.close()
+        print("done")
+        global all_songs_df
+        all_songs_df = pd.DataFrame(rows, columns=['danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'track_pop', 'artists', 'genres','id'])
+
 
 
 

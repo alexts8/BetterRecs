@@ -109,25 +109,30 @@
         var row = '<tr><td>' + artist + '</td><td>' + song + '</td><td><button type="button" id="listen-button" onclick="window.open(\'https://open.spotify.com/track/' + id + '\', \'_blank\')">Listen Here</button></td><td id="checkbox-td"><input id="checkbox" type="checkbox" name="song_ids[]" value="' + id + '"></td></tr>';
         $('#recommendations-table').append(row);
       });
+    
+      // reattach event listeners for select/deselect all buttons
+      checkboxes = document.querySelectorAll('#checkbox');
+      document.getElementById("select-all-btn").addEventListener("click", selectAll);
+      document.getElementById("deselect-all-btn").addEventListener("click", deselectAll);
     }
-
-
-    // Event listeners for select/deselect all buttons
+    
     var checkboxes = document.querySelectorAll('#checkbox');
-    document.addEventListener("DOMContentLoaded", function() {
-      document.getElementById("select-all-btn").addEventListener("click", function() {
-        checkboxes.forEach(function(checkbox) {
-          checkbox.checked = true; 
-        });
+    
+    function selectAll() {
+      checkboxes.forEach(function(checkbox) {
+        checkbox.checked = true;
       });
-    });
-
-    document.addEventListener("DOMContentLoaded", function() {
-      document.getElementById("deselect-all-btn").addEventListener("click", function() {
-        checkboxes.forEach(function(checkbox) {
-          checkbox.checked = false; 
-        });
+    }
+    
+    function deselectAll() {
+      checkboxes.forEach(function(checkbox) {
+        checkbox.checked = false;
       });
+    }
+    
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("select-all-btn").addEventListener("click", selectAll);
+      document.getElementById("deselect-all-btn").addEventListener("click", deselectAll);
     });
 
  </script>
