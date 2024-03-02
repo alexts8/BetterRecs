@@ -3,6 +3,7 @@ import ast
 import json
 import time
 import geohash2
+import pymysql
 from sklearn.preprocessing import MinMaxScaler
 import spotipy
 import os
@@ -196,14 +197,39 @@ def get_recommendations(id, slider_values=None, song_ids=None):
     relative_path = 'data/tracksgenres.csv'
     file_path = os.path.join(current_dir, relative_path)
 
-    # Read the CSV file using pandas read_csv
-    all_songs_df = pd.read_csv(file_path)
+    if 'all_songs_df' not in globals():
+        host = 'fyp-db.cpc2i6c84e9b.eu-west-1.rds.amazonaws.com'  
+        port = 3306
+        database = 'fypdatabase'
+        username = 'admin'
+        password = 'fypdatabase'
+
+        current_dir = os.getcwd()
+
+        # Establish a connection
+        conn = pymysql.connect(host=host, port=port, user=username, password=password, database=database)
+        cursor = conn.cursor()
+        print("getting df from database...")
+        cursor.execute("SELECT danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, track_pop, artists, genres, id FROM Music WHERE genres != '[]'")
+        rows = cursor.fetchall()
+        cursor.close()
+        print("done")
+        global all_songs_df
+        all_songs_df = pd.DataFrame(rows, columns=['danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'track_pop', 'artists', 'genres','id'])
+        
+    # get the current directory and the relative path to find the csv file
+    # this is a workaround before the database is implemented
+    #current_dir = os.getcwd()
+    #relative_path = 'data/tracksgenres.csv'
+    #file_path = os.path.join(current_dir, relative_path)
+    #all_songs_df = pd.read_csv(file_path)
 
     #rearrange columns to match the user dataframe
     all_songs_df_order = ['artists','genres', 'id', 'track_pop','danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo']
     all_songs_features_order = ['danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo', 'track_pop', 'id']
-    all_songs_df = all_songs_df[all_songs_df_order]
-    all_songs_features = all_songs_df[all_songs_features_order] 
+    all_songs_df_new = all_songs_df.copy()
+    all_songs_df_new = all_songs_df[all_songs_df_order]
+    all_songs_features = all_songs_df_new[all_songs_features_order] 
         
     # Find all non-playlist song features
     playlistfeatures = playlist_features.drop(columns = "id")
@@ -219,10 +245,10 @@ def get_recommendations(id, slider_values=None, song_ids=None):
                 playlistfeatures[index] += slider_values[index]
         print("after adding sliders: ", playlistfeatures)
                 
-    all_songs_df['genres'] = all_songs_df['genres'].apply(ast.literal_eval)
+    all_songs_df_new['genres'] = all_songs_df_new['genres'].apply(ast.literal_eval)
     # Find cosine similarity between the playlist and the complete song set
-    all_songs_df['sim'] = cosine_similarity(all_songs_features.drop('id', axis = 1).values, playlistfeatures.values.reshape(1, -1))[:,0]
-    non_playlist_df = all_songs_df[all_songs_df['genres'].apply(lambda x: any(genre in genres_list for genre in x))]
+    all_songs_df_new['sim'] = cosine_similarity(all_songs_features.drop('id', axis = 1).values, playlistfeatures.values.reshape(1, -1))[:,0]
+    non_playlist_df = all_songs_df_new[all_songs_df_new['genres'].apply(lambda x: any(genre in genres_list for genre in x))]
     recommendations = non_playlist_df.sort_values('sim',ascending = False).head(40)
         
     # maintain a list of song ids for later use
