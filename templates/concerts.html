@@ -16,7 +16,6 @@
   <h1> BetterRecs. </h1>
   <div class = "nav-buttons">
     <button onclick="location.href='{{ url_for('redirect_page') }}'">Home</button>
-    <button>About</button>
     <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
   </div>
   </header>
@@ -37,11 +36,71 @@
         </tbody>
       </table>
     </div>
+    </br>
   </div>
+
+  <div class = "container">
+    <h1 id = "recommendations-header">Change Location</h1>
+    <h3 id = "recommendations-subheader">Click on the map to find events for that location!</h3>
+    <div id="map-div"></div>
+    <button id="update-location-btn">Get Events for This Location</button>
+  </div>
+  
 
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDoAQQu9ZWOeGJbv0VLhChdlJ3CkAh65bs&callback=initMap" async defer></script>
   <script>
+
+    let map;
+    let currentMarker;
+
+    async function initMap() {
+      const { Map } = await google.maps.importLibrary("maps");
+      const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
+      map = new Map(document.getElementById("map-div"), {
+        zoom: 1,
+        center: { lat: 0, lng: 0 }
+      });
+    
+      map.addListener("click", function(event) {
+        const newPosition = event.latLng.toJSON();
+        placeMarker(newPosition);
+      });
+    }
+    
+    function placeMarker(position) {
+        if (currentMarker) {
+          currentMarker.setMap(null);
+        }
+        currentMarker = new google.maps.Marker({
+            position: position,
+            map: map
+        });
+    }
+    
+    function getMarkerCoordinates() {
+        if (currentMarker) {
+            const position = currentMarker.getPosition();
+            if (position) {
+            const latitude = position.lat();
+            const longitude = position.lng();
+            console.log("Coords: lat - ", latitude, " long - : ", longitude);
+            generateGeohash(latitude, longitude)
+            .then(geohash => {
+                const tableBody = document.getElementById('events-table-body');
+                tableBody.innerHTML = "";
+                fetchEventData(geohash);
+            })
+            .catch(error => {
+                console.error('Error generating geohash:', error);
+            });
+            }
+        } else {
+            console.log("no marker found");
+        }
+    }
 
     function getLocation() {
         if (navigator.geolocation) {
@@ -54,6 +113,7 @@
     function showPosition(position) {
         var latitude = position.coords.latitude;
         var longitude = position.coords.longitude;
+        console.log("Location retrieved from Geolocation - Latitude: ", latitude, "Longitude: ", longitude)
         generateGeohash(latitude, longitude)
         .then(geohash => {
             fetchEventData(geohash);
@@ -79,6 +139,7 @@
                 break;
         }
     }
+
     
     // Store variables needed to construct API call
     const apiUrl = 'https://app.ticketmaster.com/discovery/v2/events';
@@ -88,7 +149,7 @@
     function fetchEventData(geohash) {
         genresList.forEach(genre => {
             console.log("for genre ",genre," with geohash ", geohash)
-            const url = `${apiUrl}?apikey=${ticketmasterKey}&classificationName=${genre}&geoPoint=${geohash}&radius=50`;
+            const url = `${apiUrl}?apikey=${ticketmasterKey}&classificationName=${genre}&geoPoint=${geohash}&radius=50&keyword=Music`;
             console.log("for url ",url)
             fetch(url)
                 .then(response => {
@@ -99,55 +160,66 @@
                 })
                 .then(data => {
                     console.log("for genre: ",genre, data._embedded.events)
-                    displayEventData(data);
+                    displayEventData(data, genre);
                 })
                 .catch(error => {
                     console.error('There was a problem fetching event data:',genre, error);
-                    displayEventData({ _embedded: { events: [] } });
+                    displayEventData({ _embedded: { events: [] } }, genre);
                 });
             
             });
         }
     
-    function displayEventData(data) {
+    function displayEventData(data, genre) {
         if (!data._embedded || !data._embedded.events) {
             console.log('No events found for this genre.');
             return;
           }
         const events = data._embedded.events;
         const tableBody = document.getElementById('events-table-body');
-    
+        const addedEventNames = new Set();
+        
+        if (events.length > 0) {
+            const seperator = document.createElement('tr');
+            const separatorText = document.createElement('td');
+            separatorText.colSpan = "4"; 
+            separatorText.textContent = `Because You Like "${genre}":`;
+            seperator.appendChild(separatorText);
+            seperator.classList.add('separator');
+            tableBody.appendChild(seperator);
+        }
+
         events.forEach(event => {
             const eventName = event.name;
-            const eventDate = event.dates.start.localDate;
-            const venueName = event._embedded.venues[0].name;
-            const eventUrl = event.url;
+            if (!addedEventNames.has(eventName)) {
+                addedEventNames.add(eventName);
     
-            const row = document.createElement('tr');
-        
-            const nameCell = document.createElement('td');
-            nameCell.textContent = eventName;
-            row.appendChild(nameCell);
+                const row = document.createElement('tr');
+                const nameCell = document.createElement('td');
+                const dateCell = document.createElement('td');
+                const venueCell = document.createElement('td');
+                const buttonCell = document.createElement('td');
+                const button = document.createElement('button');
     
-            const dateCell = document.createElement('td');
-            dateCell.textContent = eventDate;
-            row.appendChild(dateCell);
+                nameCell.textContent = eventName;
+                dateCell.textContent = event.dates.start.localDate;
+                venueCell.textContent = event._embedded.venues[0].name;
     
-            const venueCell = document.createElement('td');
-            venueCell.textContent = venueName;
-            row.appendChild(venueCell);
+                button.textContent = 'View Event';
+                button.onclick = function() {
+                    window.open(event.url, '_blank');
+                };
+                button.id = 'listen-button';
     
-            const buttonCell = document.createElement('td');
-            const button = document.createElement('button');
-            button.textContent = 'View Event';
-            button.onclick = function() {
-            window.open(eventUrl, '_blank');
-            };
-            button.id = 'listen-button';
-            buttonCell.appendChild(button);
-            row.appendChild(buttonCell);
+                buttonCell.appendChild(button);
     
-            tableBody.appendChild(row);
+                row.appendChild(nameCell);
+                row.appendChild(dateCell);
+                row.appendChild(venueCell);
+                row.appendChild(buttonCell);
+    
+                tableBody.appendChild(row);
+            }
       });
     }
     
@@ -176,8 +248,11 @@
             });
         });
     }
-    
+
+    document.getElementById("update-location-btn").addEventListener("click", getMarkerCoordinates);
+    initMap();
     getLocation();
+
     
     
     
