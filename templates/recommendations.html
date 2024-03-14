@@ -17,10 +17,10 @@
   <div class = "nav-buttons">
     <button onclick="location.href='{{ url_for('redirect_page') }}'">Home</button>
     <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
+    <button onclick="location.href='{{ url_for('view_playlists') }}'">Back to Playlists</button>
   </div>
   </header>
   <div class="container">
-    <button class="recommendations-btn" onclick="location.href='{{ url_for('view_playlists') }}'">Back to Playlists</button>
     <h1 id = "recommendations-header">Your Recommendations</h1>
     <h3 id = "recommendations-subheader">Select some songs you like, and add them to a playlist, or regenerate more songs like them!</h3>
     <form id  ="playlist-form" method="post" action="/create_playlist">

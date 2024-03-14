@@ -141,86 +141,107 @@
     }
 
     
-    // Store variables needed to construct API call
-    const apiUrl = 'https://app.ticketmaster.com/discovery/v2/events';
-    var ticketmasterKey = 'HiDTN23YtaND8fPkw9DOmTsd8yhzRFfg';
-    
-    var genresList = {{ genres_list | tojson }};
-    function fetchEventData(geohash) {
-        genresList.forEach(genre => {
-            console.log("for genre ",genre," with geohash ", geohash)
-            const url = `${apiUrl}?apikey=${ticketmasterKey}&classificationName=${genre}&geoPoint=${geohash}&radius=50&keyword=Music`;
-            console.log("for url ",url)
+// Store variables needed to construct API call
+const apiUrl = 'https://app.ticketmaster.com/discovery/v2/events';
+const ticketmasterKey = 'HiDTN23YtaND8fPkw9DOmTsd8yhzRFfg';
+
+const genresList = {{ genres_list | tojson }};
+
+function fetchEventData(geohash) {
+    const promises = [];
+    genresList.forEach(genre => {
+        console.log("for genre ", genre, " with geohash ", geohash);
+        const url = `${apiUrl}?apikey=${ticketmasterKey}&classificationName=${genre}&geoPoint=${geohash}&radius=50&keyword=Music`;
+        console.log("for url ", url);
+        promises.push(
             fetch(url)
                 .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
+                    if (!response.ok) {
+                        throw new Error('Network response  not ok');
+                    }
+                    return response.json();
                 })
                 .then(data => {
-                    console.log("for genre: ",genre, data._embedded.events)
+                    console.log("for genre: ", genre, data._embedded.events);
                     displayEventData(data, genre);
                 })
                 .catch(error => {
-                    console.error('There was a problem fetching event data:',genre, error);
+                    console.error('There was a problem fetching event data:', genre, error);
                     displayEventData({ _embedded: { events: [] } }, genre);
-                });
-            
-            });
-        }
-    
-    function displayEventData(data, genre) {
-        if (!data._embedded || !data._embedded.events) {
-            console.log('No events found for this genre.');
-            return;
-          }
-        const events = data._embedded.events;
-        const tableBody = document.getElementById('events-table-body');
-        const addedEventNames = new Set();
-        
-        if (events.length > 0) {
-            const seperator = document.createElement('tr');
-            const separatorText = document.createElement('td');
-            separatorText.colSpan = "4"; 
-            separatorText.textContent = `Because You Like "${genre}":`;
-            seperator.appendChild(separatorText);
-            seperator.classList.add('separator');
-            tableBody.appendChild(seperator);
-        }
+                })
+        );
+    });
 
-        events.forEach(event => {
-            const eventName = event.name;
-            if (!addedEventNames.has(eventName)) {
-                addedEventNames.add(eventName);
-    
-                const row = document.createElement('tr');
-                const nameCell = document.createElement('td');
-                const dateCell = document.createElement('td');
-                const venueCell = document.createElement('td');
-                const buttonCell = document.createElement('td');
-                const button = document.createElement('button');
-    
-                nameCell.textContent = eventName;
-                dateCell.textContent = event.dates.start.localDate;
-                venueCell.textContent = event._embedded.venues[0].name;
-    
-                button.textContent = 'View Event';
-                button.onclick = function() {
-                    window.open(event.url, '_blank');
-                };
-                button.id = 'listen-button';
-    
-                buttonCell.appendChild(button);
-    
-                row.appendChild(nameCell);
-                row.appendChild(dateCell);
-                row.appendChild(venueCell);
-                row.appendChild(buttonCell);
-    
-                tableBody.appendChild(row);
-            }
-      });
+    Promise.all(promises).then(() => {
+        const tableBody = document.getElementById('events-table-body');
+        if (tableBody.innerHTML.trim() === '') {
+            displayEmptyTableMessage();
+        }
+    });
+}
+
+function displayEventData(data, genre) {
+    if (!data._embedded || !data._embedded.events) {
+        console.log('No events found for this genre.');
+        return;
+    }
+    const events = data._embedded.events;
+    const tableBody = document.getElementById('events-table-body');
+    const addedEventNames = new Set();
+
+    if (events.length > 0) {
+        const separator = document.createElement('tr');
+        const separatorText = document.createElement('td');
+        separatorText.colSpan = "4";
+        separatorText.textContent = `Because You Like "${genre}":`;
+        separator.appendChild(separatorText);
+        separator.classList.add('separator');
+        tableBody.appendChild(separator);
+    }
+
+    events.forEach(event => {
+        const eventName = event.name;
+        if (!addedEventNames.has(eventName)) {
+            addedEventNames.add(eventName);
+
+            const row = document.createElement('tr');
+            const nameCell = document.createElement('td');
+            const dateCell = document.createElement('td');
+            const venueCell = document.createElement('td');
+            const buttonCell = document.createElement('td');
+            const button = document.createElement('button');
+
+            nameCell.textContent = eventName;
+            dateCell.textContent = event.dates.start.localDate;
+            venueCell.textContent = event._embedded.venues[0].name;
+
+            button.textContent = 'View Event';
+            button.onclick = function() {
+                window.open(event.url, '_blank');
+            };
+            button.id = 'listen-button';
+
+            buttonCell.appendChild(button);
+
+            row.appendChild(nameCell);
+            row.appendChild(dateCell);
+            row.appendChild(venueCell);
+            row.appendChild(buttonCell);
+
+            tableBody.appendChild(row);
+        }
+    });
+}
+
+    function displayEmptyTableMessage(){
+        const tableBody = document.getElementById('events-table-body');
+        const seperator = document.createElement('tr');
+        const separatorText = document.createElement('td');
+        separatorText.colSpan = "4"; 
+        separatorText.textContent = `No events found for this location - try a different location or playlist.`;
+        seperator.appendChild(separatorText);
+        seperator.classList.add('separator');
+        tableBody.appendChild(seperator); 
     }
     
     function generateGeohash(latitude, longitude, precision) {
@@ -248,6 +269,7 @@
             });
         });
     }
+
 
     document.getElementById("update-location-btn").addEventListener("click", getMarkerCoordinates);
     initMap();
