@@ -1,4 +1,4 @@
-body, h1, h2, ul {
+body, h1, h2, h3, ul {
     margin: 0;
     padding: 0;
 }
@@ -386,4 +386,43 @@ th{
 .separator {
     font-size: 1.5rem; 
     color: rgb(35, 206, 107); 
+}
+
+/* styles specific to profile.html */
+.profile-header{
+    text-align: center;
+}
+
+.stats-list{
+    max-width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: rgb(241, 240, 240);
+    border-radius: 8px;
+}
+
+.scroll-list-topartists{
+    max-height: 30vh;
+    overflow-x: auto;
+    white-space: nowrap;
+    border-radius: 25px;
+    padding:10px;
+}
+
+.artistdiv {
+    display: flex; 
+    align-items: center; 
+    margin: 3px;
+    height: auto;
+    width: 60%;
+    padding-bottom: 5%;
+}
+
+.artistdiv img {
+    width: 20%;
+    height: 20%;
+    border-radius: 25px;
+}
+.artistdiv h3 {
+    padding-left: 5%;
 }

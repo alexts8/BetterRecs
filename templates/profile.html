@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+ <head>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <title>Profile</title>
+ </head>
+ <body>
+  <header>
+    <h1> BetterRecs. </h1>
+    <div class = "nav-buttons">
+      <button onclick="location.href='{{ url_for('redirect_page') }}'">Home</button>
+      <button onclick="location.href='{{ url_for('profile') }}'">Profile</button>
+      <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
+    </div>
+  </header>
+  <div class = "container">
+    <h1 class = "profile-header"> Hello, {{ username }}!</h1>
+    <h3 class = "profile-header"> Explore Your Listening Habits. </h3>
+    <br>
+
+    <div class = "stats-list">
+    <h2> Your Top Artists <h2>
+        {% if artists_lt is defined and artists_lt|length > 0 %}
+        <div class = "scroll-list-topartists">
+          <ol>
+              {% for (name,image) in artists_lt.items() %}
+              <li>
+                <div class = "artistdiv">
+                    <img src="{{ image }}">
+                    <h3>{{name}}</h3>
+                </div>
+              </li>
+              {% endfor %}
+          </ol>
+        </div>
+      {% else %}
+        <p>No Data Found!</p>
+      {% endif %}
+    </div>
+
+    <div class = "stats-list">
+    <h2> Your Top Songs <h2>
+        {% if tracks_lt %}
+        <div class="scroll-list-topartists">
+          <ol>
+            {% for name, track_name, image_url in tracks_lt %}
+            <li>
+              <div class="artistdiv">
+                <img src="{{ image_url }}">
+                <h3>{{ name }} - {{ track_name }}</h3>
+              </div>
+            </li>
+              {% endfor %}
+          </ol>
+        </div>
+      {% else %}
+        <p>No Data Found!</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+
+ </body>
+</html>

@@ -16,8 +16,9 @@
   <h1> BetterRecs. </h1>
   <div class = "nav-buttons">
     <button onclick="location.href='{{ url_for('redirect_page') }}'">Home</button>
-    <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
+    <button onclick="location.href='{{ url_for('profile') }}'">Profile</button>
     <button onclick="location.href='{{ url_for('view_playlists') }}'">Back to Playlists</button>
+    <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
   </div>
   </header>
   <div class="container">

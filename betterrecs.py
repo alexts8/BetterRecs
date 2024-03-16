@@ -57,9 +57,61 @@ def redirect_page():
     token_info = create_spotify_oauth().get_access_token(code)
     # save the token info in the session
     session[TOKEN_INFO] = token_info
-    # redirect the user to the homepage
+    # render the homepage
     return render_template('home.html')
 
+# route to show the suer profile page and gather all data needed for it
+@app.route('/profile')
+def profile():
+    try: 
+        # get the token info from the session
+        token_info = get_token()
+    except:
+        # if the token info is not found, redirect the user to the login route
+        print('User not logged in')
+        return redirect("/")
+    
+    username = get_profile_info(token_info)
+    tracks_lt = get_top_tracks(token_info)
+    artists_lt = get_top_artists(token_info)
+    # render the profile page
+    return render_template('profile.html', username = username, artists_lt = artists_lt,
+                           tracks_lt = tracks_lt)
+
+def get_profile_info(token_info):
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    user_info = sp.current_user()
+    username = None
+    if 'display_name' in user_info:
+        username = user_info['display_name']
+    return (username)
+
+def get_top_artists(token_info):
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    artists_lt = sp.current_user_top_artists(limit=20, offset=0, time_range='short_term')
+    artists_dict = {}
+    
+    for artist in artists_lt['items']:
+        name = artist['name']
+        image_url = artist['images'][0]['url'] if artist['images'] else None
+        artists_dict[name] = image_url
+        
+    return (artists_dict)
+
+def get_top_tracks(token_info):
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    tracks_lt = sp.current_user_top_tracks(limit=20, offset=0, time_range='short_term')
+    tracks_info_list = []
+
+    for track in tracks_lt['items']:
+        name = track['album']['artists'][0]['name']
+        track_id = track['id']
+        track_info = sp.track(track_id)
+        track_name = track_info['name']
+        image_url = track['album']['images'][0]['url'] if track['album']['images'] else ''  # Handle case where no images are available
+        tracks_info_list.append((name, track_name, image_url))
+
+    return tracks_info_list
 
 @app.route('/viewPlaylists')
 def view_playlists():
@@ -479,7 +531,7 @@ def create_spotify_oauth():
         client_id = 'ac6f1f1226104632a114669a4b2fc962',
         client_secret = 'b942dbcd77234e9f809564415f95c7e6',
         redirect_uri = url_for('redirect_page', _external=True),
-        scope='user-library-read playlist-modify-public playlist-modify-private'
+        scope='user-library-read playlist-modify-public playlist-modify-private user-top-read'
     )
 
 app.run(debug=True)
