@@ -17,11 +17,18 @@
       <button onclick="window.open('{{ url_for('logout') }}', '_blank')">Logout</button>
     </div>
   </header>
+
   <div class = "container">
+
     <h1 class = "profile-header"> Hello, {{ username }}!</h1>
     <h3 class = "profile-header"> Explore Your Listening Habits. </h3>
-    <br>
 
+    <div class = "center-buttons">
+      <button onclick="location.href='{{ url_for('profile') }}?time_range=short_term'">Last 4 Weeks</button>
+      <button onclick="location.href='{{ url_for('profile') }}?time_range=medium_term'">Last 6 Months</button>
+      <button onclick="location.href='{{ url_for('profile') }}?time_range=long_term'">All Time</button>
+    </div>
+ 
     <div class = "stats-list">
     <h2> Your Top Artists <h2>
         {% if artists_lt is defined and artists_lt|length > 0 %}
@@ -61,9 +68,8 @@
         <p>No Data Found!</p>
       {% endif %}
     </div>
-
   </div>
 
-
+  
  </body>
 </html>

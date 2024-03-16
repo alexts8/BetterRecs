@@ -415,7 +415,7 @@ th{
     margin: 3px;
     height: auto;
     width: 60%;
-    padding-bottom: 5%;
+    padding-bottom: 2%;
 }
 
 .artistdiv img {
@@ -425,4 +425,23 @@ th{
 }
 .artistdiv h3 {
     padding-left: 5%;
+}
+
+.center-buttons{
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+}
+
+.center-buttons button{
+    padding: 1%;
+    margin: 1%;
+    background-color: rgb(227, 218, 218); 
+    border: none;
+    border-radius: 25px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.center-buttons button:hover{
+    background-color: rgb(192, 184, 184); 
 }

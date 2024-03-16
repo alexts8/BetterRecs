@@ -71,9 +71,11 @@ def profile():
         print('User not logged in')
         return redirect("/")
     
+    time_range = request.args.get('time_range', "long_term")
+    
     username = get_profile_info(token_info)
-    tracks_lt = get_top_tracks(token_info)
-    artists_lt = get_top_artists(token_info)
+    tracks_lt = get_top_tracks(time_range, token_info)
+    artists_lt = get_top_artists(time_range, token_info)
     # render the profile page
     return render_template('profile.html', username = username, artists_lt = artists_lt,
                            tracks_lt = tracks_lt)
@@ -86,9 +88,9 @@ def get_profile_info(token_info):
         username = user_info['display_name']
     return (username)
 
-def get_top_artists(token_info):
+def get_top_artists(time_range, token_info):
     sp = spotipy.Spotify(auth=token_info['access_token'])
-    artists_lt = sp.current_user_top_artists(limit=20, offset=0, time_range='short_term')
+    artists_lt = sp.current_user_top_artists(limit=20, offset=0, time_range=time_range)
     artists_dict = {}
     
     for artist in artists_lt['items']:
@@ -98,9 +100,9 @@ def get_top_artists(token_info):
         
     return (artists_dict)
 
-def get_top_tracks(token_info):
+def get_top_tracks(time_range, token_info):
     sp = spotipy.Spotify(auth=token_info['access_token'])
-    tracks_lt = sp.current_user_top_tracks(limit=20, offset=0, time_range='short_term')
+    tracks_lt = sp.current_user_top_tracks(limit=20, offset=0, time_range=time_range)
     tracks_info_list = []
 
     for track in tracks_lt['items']:
