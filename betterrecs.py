@@ -312,22 +312,22 @@ def get_recommendations(id, slider_values=None, song_ids=None):
 
 
 def create_all_songs_df():
-        host = 'fyp-db.cpc2i6c84e9b.eu-west-1.rds.amazonaws.com'  
-        port = 3306
-        database = 'fypdatabase'
-        username = 'admin'
-        password = 'fypdatabase'
+    host = 'fyp-db.cpc2i6c84e9b.eu-west-1.rds.amazonaws.com'  
+    port = 3306
+    database = 'fypdatabase'
+    username = 'admin'
+    password = 'fypdatabase'
 
-        # Establish a connection
-        conn = pymysql.connect(host=host, port=port, user=username, password=password, database=database)
-        cursor = conn.cursor()
-        print("getting df from database...")
-        cursor.execute("SELECT danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, track_pop, artists, genres, id FROM Music WHERE genres != '[]'")
-        rows = cursor.fetchall()
-        cursor.close()
-        print("done")
-        global all_songs_df
-        all_songs_df = pd.DataFrame(rows, columns=['danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'track_pop', 'artists', 'genres','id'])
+    # Establish a connection
+    conn = pymysql.connect(host=host, port=port, user=username, password=password, database=database)
+    cursor = conn.cursor()
+    print("getting df from database...")
+    cursor.execute("SELECT danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, track_pop, artists, genres, id FROM Music WHERE genres != '[]'")
+    rows = cursor.fetchall()
+    cursor.close()
+    print("done")
+    global all_songs_df
+    all_songs_df = pd.DataFrame(rows, columns=['danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'track_pop', 'artists', 'genres','id'])
 
 
 
@@ -536,4 +536,6 @@ def create_spotify_oauth():
         scope='user-library-read playlist-modify-public playlist-modify-private user-top-read'
     )
 
-app.run(debug=True)
+if __name__ == '__main__':
+    #app.debug = True
+    app.run()

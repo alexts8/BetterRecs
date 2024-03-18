@@ -1,0 +1,6 @@
+.coverage
+.cache
+__pycache__/betterrecs.cpython-39.pyc
+__pycache__/test_app.cpython-39.pyc
+__pycache__/test_betterrecs.cpython-39-pytest-8.1.1.pyc
+data/db_insert.py
