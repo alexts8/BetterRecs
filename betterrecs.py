@@ -60,7 +60,7 @@ def redirect_page():
     # render the homepage
     return render_template('home.html')
 
-# route to show the suer profile page and gather all data needed for it
+# route to show the user profile page and gather all data needed for it
 @app.route('/profile')
 def profile():
     try: 
@@ -110,7 +110,7 @@ def get_top_tracks(time_range, token_info):
         track_id = track['id']
         track_info = sp.track(track_id)
         track_name = track_info['name']
-        image_url = track['album']['images'][0]['url'] if track['album']['images'] else ''  # Handle case where no images are available
+        image_url = track['album']['images'][0]['url'] if track['album']['images'] else ''  
         tracks_info_list.append((name, track_name, image_url))
 
     return tracks_info_list
@@ -537,5 +537,5 @@ def create_spotify_oauth():
     )
 
 if __name__ == '__main__':
-    #app.debug = True
+    app.debug = True
     app.run()

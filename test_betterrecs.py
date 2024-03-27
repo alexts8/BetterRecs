@@ -2,8 +2,15 @@ import pytest
 from betterrecs import *
 from flask import session
 
-# simulate an access access token
-TOKEN_INFO = {"access_token": "BQAvvb8LtBpxQZR5Jcssl9YLr8IebMKPZv-e4e-zfpi05vRwDqFE7CPC3DzxS0tTG_YBabRaN_q_z5VttJJYed-wh4bDTSGWlip1QRdcqComAK_7JFJY1x0UF7PFIAEOQVOyqrpxyxNHzcceyTlcT17BX-xQsSgllWgmHkmuOzwGpxUs269QfmOqFcGKXIZw7kwQVx5Q13oEmRr39P3j38O5lMG2x3fGPBIOx07ew6udFDGk4GKLS5ewfTOH", "token_type": "Bearer", "expires_in": 3600, "scope": "user-library-read playlist-modify-public playlist-modify-private user-top-read", "expires_at": 1710788561, "refresh_token": "AQCIsxkgAw_zlB2F8ZEiiAPMOaFczmUrG-LBOFhXdt9DpTidaZ18EVsvXVl9Bki91EuaeH1haFQjEpS890SV-mHSc9T_b6Mg_gWasHWfCjFmP3tkzZK3J7MLwIsAxhAx7xc"}
+# simulate an access token
+TOKEN_INFO = {"access_token":
+    "BQB-RAzKcTjP8kcT8-rfw4kbL0f8UgMmzx-Ds-YwhvS7ZydMxPAEbIc7d3ReLyODaGhj-Ll7B2eC3TEHKtwM50NxwmhNtvx0hXVvt6GO8AVFSVI6WyUW6WknCa1POMNOWbV3HbfgPmfkbH3R9fpvx3yczQsl1GsHzWE2ql4NMkivufCzbBL9HjEZzMrI8_cp7f-zEOhgCdBuyZeqCoBX97i_I4dMwKMJOzbTzfA8-OlcAf8ot9pYJQlFO6sQ",
+    "token_type": "Bearer",
+    "expires_in": 3600,
+    "scope": "user-library-read playlist-modify-public playlist-modify-private user-top-read",
+    "expires_at": 1710793219,
+    "refresh_token": "AQCIsxkgAw_zlB2F8ZEiiAPMOaFczmUrG-LBOFhXdt9DpTidaZ18EVsvXVl9Bki91EuaeH1haFQjEpS890SV-mHSc9T_b6Mg_gWasHWfCjFmP3tkzZK3J7MLwIsAxhAx7xc"
+    }
 username = "alextsiogas"
 
 @pytest.fixture
@@ -90,7 +97,7 @@ def test_playlist_page_with_invalid_id(client):
         sess['token_info'] = TOKEN_INFO
     # make a GET request to the playlist page route with an invalid playlist ID
     response = client.get('/playlist/invalid_playlist_id')
-    assert response.status_code == 200
+    assert response.status_code == 302
     assert b'playlist not found' in response.data.lower()
     
     

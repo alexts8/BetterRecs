@@ -20,6 +20,7 @@
         </div>
       </header>
         <div class="container">
+          <!-- loop through the playlist songs as received from flask and display in a list -->
           <h1>{{pname}}</h1>
           {% if psongs is defined and psongs|length > 0 %}
           <h2>Songs in Playlist:</h2>
@@ -30,6 +31,7 @@
                 {% endfor %}
             </ul>
           </div>
+        <!-- Error message for invalid playlist -->
         {% else %}
           <p>No songs found!</p>
         {% endif %}
@@ -43,6 +45,17 @@
           </div>
           <div class="change-mood-right">
             <div class="sliders-container">
+              <button id="popupBtn">What do these change?</button>
+              <div id="popup">
+                <h2>Mood Variables</h2>
+                <p>Happiness  -  The musical positiveness conveyed by a song. Songs with a higher/lower value are audibly happier/sadder.</p>
+                <p>Danceability  -  A measure of how suitable the song is for dancing based on rhythym stability and beat strength.</p>
+                <p>Energy  -  A measure of musical intensity, derived from the song. More energetic songs are typically fast and noisy.</p>
+                <p>Loudness  -   Pure loudness of the audio, measured in decibels.</p>
+                <p>Tempo  -  The tempo (speed) of the music, measured in beats per minute.</p>
+                <p style = "color: #1DB954">Adjust to Your Liking!</p>
+                <button id="closeBtn">Close</button>
+              </div>
               <form action='/getRecommendations/{{id}}' method="post">
                 <p>Happiness</p>
                 <input type="range" id="slider1" name="slider1" min="-1" max="1" step="0.01" value="0">
@@ -79,6 +92,26 @@
         </div>
       </div>
     </div>
-  
+
+    <script>
+      // get the button and popup screen elements by id
+      const popupBtn = document.getElementById('popupBtn');
+      const popup = document.getElementById('popup');
+      const closeBtn = document.getElementById('closeBtn');
+
+      // function to display the popup div by changing its display element
+      function showPopup() {
+        popup.style.display = 'block';
+      }
+    
+      // function to hide the popup by changing its display element
+      function hidePopup() {
+        popup.style.display = 'none';
+      }
+    
+      // event listener for buttons to show/close popup
+      popupBtn.addEventListener('click', showPopup);
+      closeBtn.addEventListener('click', hidePopup);
+    </script>
   </body>
 </html>

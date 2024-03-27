@@ -31,16 +31,16 @@
       <div class="table-container">
         <table id = "recommendations-table">
           <tr>
-            <th>Artist Name</th>
             <th>Song Name</th>
+            <th>Artist Name</th>
             <th>Listen</th>
             <th>Select</th>
           </tr>
           {% for artist, song in recommendations_dict.items() %}
           {% set id = song_ids_list[loop.index0] %}
           <tr>
-            <td>{{ song }}</td>
             <td>{{ artist }}</td>
+            <td>{{ song }}</td>
             <td><button type="button" id = "listen-button" onclick="window.open('https://open.spotify.com/track/{{ id }}', '_blank')">Listen Here</button></td>
             <td id="checkbox-td"><input id ="checkbox" type="checkbox" name="song_ids[]" value="{{ id }}"></td>
           </tr>
@@ -102,7 +102,7 @@
     // Update recommendations with response data
     function updateTable(recommendations_dict, song_ids_list) {
       $('#recommendations-table').empty();
-      $('#recommendations-table').append('<tr><th>Artist Name</th><th>Song Name</th><th>Listen</th><th>Select</th></tr>');
+      $('#recommendations-table').append('<tr><th>Song Name</th><th>Artist Name</th><th>Listen</th><th>Select</th></tr>');
       $.each(recommendations_dict, function(index, recommendation) {
         var artist = recommendation[0];
         var song = recommendation[1];
