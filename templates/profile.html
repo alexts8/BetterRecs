@@ -26,9 +26,10 @@
     <div class = "center-buttons">
       <button onclick="location.href='{{ url_for('profile') }}?time_range=short_term'">Last 4 Weeks</button>
       <button onclick="location.href='{{ url_for('profile') }}?time_range=medium_term'">Last 6 Months</button>
-      <button onclick="location.href='{{ url_for('profile') }}?time_range=long_term'">All Time</button>
+      <button onclick="location.href='{{ url_for('profile') }}?time_range=long_term'">Last Year</button>
     </div>
- 
+    <h3 class = "profile-header"> Currently Viewing: {{ time }}</h3>
+
     <div class = "stats-list">
     <h2> Your Top Artists <h2>
         {% if artists_lt is defined and artists_lt|length > 0 %}

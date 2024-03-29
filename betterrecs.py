@@ -71,28 +71,46 @@ def profile():
         print('User not logged in')
         return redirect("/")
     
-    time_range = request.args.get('time_range', "long_term")
-    
+    # find what time range data has been requested for
+    time_range = request.args.get('time_range', "short_term")
+      
+    #retrieve username , list of tracks, and list of artists for the given time range
     username = get_profile_info(token_info)
     tracks_lt = get_top_tracks(time_range, token_info)
     artists_lt = get_top_artists(time_range, token_info)
+    
+    #this time variable is used in the html template to show the suer which time period they're viewing
+    if time_range == "short_term":
+        time = "Last 4 Weeks"
+    elif time_range == "medium_term":
+        time = "Last 6 Months"
+    elif time_range == "long_term":
+        time = "Last Year"
+    else:
+        time = "Unknown"
+        
     # render the profile page
     return render_template('profile.html', username = username, artists_lt = artists_lt,
-                           tracks_lt = tracks_lt)
+                           tracks_lt = tracks_lt, time=time)
 
+#function to retrieve user's usernamw from their profile info
 def get_profile_info(token_info):
+    #create the spotipy object and make the call
     sp = spotipy.Spotify(auth=token_info['access_token'])
     user_info = sp.current_user()
+    #return the display name
     username = None
     if 'display_name' in user_info:
         username = user_info['display_name']
     return (username)
 
+#function to retrieve user's top artists for a given time range
 def get_top_artists(time_range, token_info):
+    #create the spotipy object and make the call for 20 top artists
     sp = spotipy.Spotify(auth=token_info['access_token'])
     artists_lt = sp.current_user_top_artists(limit=20, offset=0, time_range=time_range)
     artists_dict = {}
-    
+    #store artist name and images in a dictionary and return
     for artist in artists_lt['items']:
         name = artist['name']
         image_url = artist['images'][0]['url'] if artist['images'] else None
@@ -100,11 +118,13 @@ def get_top_artists(time_range, token_info):
         
     return (artists_dict)
 
+#function to retrieve user's top tracks for a given time range
 def get_top_tracks(time_range, token_info):
+        #create the spotipy object and make the call for 20 top tracks
     sp = spotipy.Spotify(auth=token_info['access_token'])
     tracks_lt = sp.current_user_top_tracks(limit=20, offset=0, time_range=time_range)
     tracks_info_list = []
-
+    #store artist name, track name, album image list and return
     for track in tracks_lt['items']:
         name = track['album']['artists'][0]['name']
         track_id = track['id']
@@ -112,7 +132,6 @@ def get_top_tracks(time_range, token_info):
         track_name = track_info['name']
         image_url = track['album']['images'][0]['url'] if track['album']['images'] else ''  
         tracks_info_list.append((name, track_name, image_url))
-
     return tracks_info_list
 
 @app.route('/viewPlaylists')
