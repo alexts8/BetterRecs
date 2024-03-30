@@ -4,7 +4,6 @@ import json
 import time
 import geohash2
 import pymysql
-from sklearn.preprocessing import MinMaxScaler
 import spotipy
 import os
 from spotipy.oauth2 import SpotifyOAuth
@@ -12,6 +11,9 @@ from spotipy.client import SpotifyException
 from flask import Flask, jsonify, request, url_for, session, redirect, render_template
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
+import matplotlib.pyplot as plt
+from io import BytesIO
+import base64
 
 
 # initialize Flask app
@@ -78,6 +80,7 @@ def profile():
     username = get_profile_info(token_info)
     tracks_lt = get_top_tracks(time_range, token_info)
     artists_lt = get_top_artists(time_range, token_info)
+    audio_analysis = get_audio_analysis(time_range, token_info)
     
     #this time variable is used in the html template to show the suer which time period they're viewing
     if time_range == "short_term":
@@ -91,9 +94,9 @@ def profile():
         
     # render the profile page
     return render_template('profile.html', username = username, artists_lt = artists_lt,
-                           tracks_lt = tracks_lt, time=time)
+                           tracks_lt = tracks_lt, time=time, audio_analysis = audio_analysis)
 
-#function to retrieve user's usernamw from their profile info
+#function to retrieve user's username from their profile info
 def get_profile_info(token_info):
     #create the spotipy object and make the call
     sp = spotipy.Spotify(auth=token_info['access_token'])
@@ -120,7 +123,7 @@ def get_top_artists(time_range, token_info):
 
 #function to retrieve user's top tracks for a given time range
 def get_top_tracks(time_range, token_info):
-        #create the spotipy object and make the call for 20 top tracks
+    #create the spotipy object and make the call for 20 top tracks
     sp = spotipy.Spotify(auth=token_info['access_token'])
     tracks_lt = sp.current_user_top_tracks(limit=20, offset=0, time_range=time_range)
     tracks_info_list = []
@@ -133,6 +136,71 @@ def get_top_tracks(time_range, token_info):
         image_url = track['album']['images'][0]['url'] if track['album']['images'] else ''  
         tracks_info_list.append((name, track_name, image_url))
     return tracks_info_list
+
+def get_audio_analysis(time_range, token_info):
+    #create the spotipy object and make the call for 20 top tracks
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    tracks_lt = sp.current_user_top_tracks(limit=20, offset=0, time_range=time_range)
+
+    # get track IDs from the top tracks
+    track_ids = [track['id'] for track in tracks_lt['items']]
+    # use track ids to get audio features
+    audio_features = sp.audio_features(track_ids)
+
+    # initialize vars to store total values
+    total_danceability = 0
+    total_energy = 0
+    total_loudness = 0
+    total_instrumentalness = 0
+    total_valence = 0
+    total_tempo = 0
+
+    # iterate through audio features and add values
+    for track_features in audio_features:
+        total_danceability += track_features['danceability']
+        total_energy += track_features['energy']
+        total_loudness += track_features['loudness']
+        total_instrumentalness += track_features['instrumentalness']
+        total_valence += track_features['valence']
+        total_tempo += track_features['tempo']
+
+        # get the averages
+        num_tracks = len(audio_features)
+        avg_danceability = total_danceability / num_tracks
+        avg_energy = total_energy / num_tracks
+        avg_loudness = total_loudness / num_tracks
+        avg_instrumentalness = total_instrumentalness / num_tracks
+        avg_valence = total_valence / num_tracks
+        avg_tempo = total_tempo / num_tracks
+
+    # set mins and maxes for normalizing features
+    min_loudness = -20
+    max_loudness = 0
+    min_tempo = 0
+    max_tempo = 200
+
+    # function to handle normalization =
+    def normalize_value(value, min_val, max_val):
+        return (value - min_val) / (max_val - min_val)
+
+    # normalize the irregualr values (loudness and tempo)
+    normalized_loudness = normalize_value(avg_loudness, min_loudness, max_loudness)
+    normalized_tempo = normalize_value(avg_tempo, min_tempo, max_tempo)
+
+    # construct a dictionary of normalized values
+    audio_analysis_dict = {
+    'Danceability': avg_danceability,
+    'Energy': avg_energy,
+    'Loudness': avg_loudness,
+    'Instrumentalness': avg_instrumentalness,
+    'Happiness': avg_valence,
+    'Loudness': normalized_loudness,
+    'Tempo': normalized_tempo
+    }
+    
+    return(audio_analysis_dict)
+    
+    
 
 @app.route('/viewPlaylists')
 def view_playlists():
@@ -273,13 +341,6 @@ def get_recommendations(id, slider_values=None, song_ids=None):
     if 'all_songs_df' not in globals():
         create_all_songs_df()
         
-    # get the current directory and the relative path to find the csv file
-    # this is a workaround before the database is implemented
-    #current_dir = os.getcwd()
-    #relative_path = 'data/tracksgenres.csv'
-    #file_path = os.path.join(current_dir, relative_path)
-    #all_songs_df = pd.read_csv(file_path)
-
     #rearrange columns to match the user dataframe
     all_songs_df_order = ['artists','genres', 'id', 'track_pop','danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo']
     all_songs_features_order = ['danceability','energy','loudness','speechiness','acousticness','instrumentalness','liveness','valence','tempo', 'track_pop', 'id']
@@ -323,10 +384,7 @@ def get_recommendations(id, slider_values=None, song_ids=None):
 
         # Store track name and artist in the dictionary
         recommendations_dict[track_name] = artist_name
-        
-    print(song_ids_list[0])
-    print(next(iter(recommendations_dict.items())))
-            
+                
     return recommendations_dict, song_ids_list, genres_list
 
 

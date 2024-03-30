@@ -5,6 +5,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <meta charset="utf-8">
   <title>Profile</title>
  </head>
@@ -69,8 +70,50 @@
         <p>No Data Found!</p>
       {% endif %}
     </div>
+
+    <div class = barchartDiv>
+      <h2>{{ time }}: Top Tracks Audio Analysis</h2>
+      <canvas id="barchart"></canvas>
+    </div>
+
   </div>
 
-  
- </body>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // get the audio analysis dictionary and parse
+        const audio_analysis = JSON.parse('{{ audio_analysis | tojson | safe }}');
+        // get all the feature names and their values
+        const features = Object.keys(audio_analysis);
+        const values = Object.values(audio_analysis);
+
+        // create a 2d chart.js barchart
+        const ctx = document.getElementById('barchart').getContext('2d');
+        const barchart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              // set the feature names as the labels
+                labels: features,
+                datasets: [{
+                  // set the feature values as the data
+                    data: values,
+                    backgroundColor: 'rgba(29, 185, 84)'
+                }]
+            },
+            options: {
+              scales: {
+                  y: {
+                      display: false, // hide the y axis
+                      beginAtZero: true // the chart should start at 0
+                  }
+              },
+              plugins: {
+                  legend: {
+                      display: false // hide the legend
+                  }
+              }
+          }
+      });
+  });
+  </script>
+</body>
 </html>

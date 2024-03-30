@@ -485,3 +485,12 @@ th{
 .center-buttons button:hover{
     background-color: rgb(192, 184, 184); 
 }
+
+.barchartDiv{
+    max-width: 80%;
+    margin: 1% auto;
+    padding: 2%;
+    background-color: rgb(241, 240, 240);
+    border-radius: 8px;
+}
+
