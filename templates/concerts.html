@@ -53,47 +53,59 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDoAQQu9ZWOeGJbv0VLhChdlJ3CkAh65bs&callback=initMap" async defer></script>
   <script>
 
+    // initialize variables for map and marker
     let map;
     let currentMarker;
 
+    // function to initialize the map
     async function initMap() {
       const { Map } = await google.maps.importLibrary("maps");
       const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-
+      // start at center
       map = new Map(document.getElementById("map-div"), {
         zoom: 1,
         center: { lat: 0, lng: 0 }
       });
-    
+
+      // add a click listener to the mao, that gets the clicked coordinates and passes them to placeMarker
       map.addListener("click", function(event) {
         const newPosition = event.latLng.toJSON();
         placeMarker(newPosition);
       });
     }
     
+    // function to place the marker
     function placeMarker(position) {
+        //remove current marker
         if (currentMarker) {
           currentMarker.setMap(null);
         }
+        //set a new marker at the position selected
         currentMarker = new google.maps.Marker({
             position: position,
             map: map
         });
     }
     
+    // function to get geohash coordinates from marker location
     function getMarkerCoordinates() {
         if (currentMarker) {
+            // get position of current marker
             const position = currentMarker.getPosition();
             if (position) {
             const latitude = position.lat();
             const longitude = position.lng();
             console.log("Coords: lat - ", latitude, " long - : ", longitude);
+            // generate a geohash from the selected coordinates
             generateGeohash(latitude, longitude)
             .then(geohash => {
+                // empty the table
                 const tableBody = document.getElementById('events-table-body');
                 tableBody.innerHTML = "";
+                // get events for the new geohash
                 fetchEventData(geohash);
             })
+            // catch errors
             .catch(error => {
                 console.error('Error generating geohash:', error);
             });
@@ -103,27 +115,34 @@
         }
     }
 
+    // function to prompt the user to grant location access
     function getLocation() {
         if (navigator.geolocation) {
+            // get the user's position if they grant access
             navigator.geolocation.getCurrentPosition(showPosition, showError);
         } else {
             console.log("Geolocation is not supported by this browser.");
         }
     }
     
+    // function to show the events for the users current location, upon initial DOM loading
     function showPosition(position) {
         var latitude = position.coords.latitude;
         var longitude = position.coords.longitude;
         console.log("Location retrieved from Geolocation - Latitude: ", latitude, "Longitude: ", longitude)
+        // get geohash
         generateGeohash(latitude, longitude)
         .then(geohash => {
+        // get events for geohash
             fetchEventData(geohash);
         })
+        // catch errors
         .catch(error => {
             console.error('Error generating geohash:', error);
         });
     }
     
+    // function to handle errors when user denies location permissions / other errors
     function showError(error) {
         switch(error.code) {
             case error.PERMISSION_DENIED:
@@ -146,26 +165,34 @@
 const apiUrl = 'https://app.ticketmaster.com/discovery/v2/events';
 const ticketmasterKey = 'HiDTN23YtaND8fPkw9DOmTsd8yhzRFfg';
 
+// get genres list from python variable into JSON
 const genresList = {{ genres_list | tojson }};
 
+// function to get events for the selected location
 function fetchEventData(geohash) {
+    // initialize array for storing promises
     const promises = [];
+    // loop through each genre
     genresList.forEach(genre => {
         console.log("for genre ", genre, " with geohash ", geohash);
+        // construct an API call url to Ticketmaster API for events that match location & genre
         const url = `${apiUrl}?apikey=${ticketmasterKey}&classificationName=${genre}&geoPoint=${geohash}&radius=50&keyword=Music`;
-        console.log("for url ", url);
+        // push each API call to the promise array
         promises.push(
             fetch(url)
+                // handle bad response
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response  not ok');
                     }
                     return response.json();
                 })
+                // if data is received display the received events
                 .then(data => {
                     console.log("for genre: ", genre, data._embedded.events);
                     displayEventData(data, genre);
                 })
+                // handle errors by displaying nothing for that genre
                 .catch(error => {
                     console.error('There was a problem fetching event data:', genre, error);
                     displayEventData({ _embedded: { events: [] } }, genre);
@@ -173,80 +200,97 @@ function fetchEventData(geohash) {
         );
     });
 
+    // handle resolving promises
     Promise.all(promises).then(() => {
+        // when promises resolve, if no events were found, display the empty table message
         const tableBody = document.getElementById('events-table-body');
         if (tableBody.innerHTML.trim() === '') {
             displayEmptyTableMessage();
-        }
-    });
-}
-
-function displayEventData(data, genre) {
-    if (!data._embedded || !data._embedded.events) {
-        console.log('No events found for this genre.');
-        return;
-    }
-    const events = data._embedded.events;
-    const tableBody = document.getElementById('events-table-body');
-    const addedEventNames = new Set();
-
-    if (events.length > 0) {
-        const separator = document.createElement('tr');
-        const separatorText = document.createElement('td');
-        separatorText.colSpan = "4";
-        separatorText.textContent = `Because You Like "${genre}":`;
-        separator.appendChild(separatorText);
-        separator.classList.add('separator');
-        tableBody.appendChild(separator);
+            }
+        });
     }
 
-    events.forEach(event => {
-        const eventName = event.name;
-        if (!addedEventNames.has(eventName)) {
-            addedEventNames.add(eventName);
-
-            const row = document.createElement('tr');
-            const nameCell = document.createElement('td');
-            const dateCell = document.createElement('td');
-            const venueCell = document.createElement('td');
-            const buttonCell = document.createElement('td');
-            const button = document.createElement('button');
-
-            nameCell.textContent = eventName;
-            dateCell.textContent = event.dates.start.localDate;
-            venueCell.textContent = event._embedded.venues[0].name;
-
-            button.textContent = 'View Event';
-            button.onclick = function() {
-                window.open(event.url, '_blank');
-            };
-            button.id = 'listen-button';
-
-            buttonCell.appendChild(button);
-
-            row.appendChild(nameCell);
-            row.appendChild(dateCell);
-            row.appendChild(venueCell);
-            row.appendChild(buttonCell);
-
-            tableBody.appendChild(row);
+    // function to display the events retrieved from API calls
+    function displayEventData(data, genre) {
+        // if none found, skip this genre
+        if (!data._embedded || !data._embedded.events) {
+            console.log('No events found for this genre.');
+            return;
         }
-    });
-}
 
+        // get events from data
+        const events = data._embedded.events;
+        // target the table body
+        const tableBody = document.getElementById('events-table-body');
+        // create a set of events that have been added - will avoid duplicate events
+        const addedEventNames = new Set();
+
+        // if events were found, create the new header row
+        if (events.length > 0) {
+            const separator = document.createElement('tr');
+            const separatorText = document.createElement('td');
+            separatorText.colSpan = "4";
+            separatorText.textContent = `Because You Like "${genre}":`;
+            separator.appendChild(separatorText);
+            separator.classList.add('separator');
+            tableBody.appendChild(separator);
+        }
+
+        // for each found event
+        events.forEach(event => {
+            const eventName = event.name;
+            // check that event hasnt been added already
+            if (!addedEventNames.has(eventName)) {
+                addedEventNames.add(eventName);
+                // create the new table row
+                const row = document.createElement('tr');
+                const nameCell = document.createElement('td');
+                const dateCell = document.createElement('td');
+                const venueCell = document.createElement('td');
+                const buttonCell = document.createElement('td');
+                const button = document.createElement('button');
+                // add the event data to the table row
+                nameCell.textContent = eventName;
+                dateCell.textContent = event.dates.start.localDate;
+                venueCell.textContent = event._embedded.venues[0].name;
+                // create the view event button, that redirects to the Ticketmaster event page
+                button.textContent = 'View Event';
+                button.onclick = function() {
+                    window.open(event.url, '_blank');
+                };
+                button.id = 'listen-button';
+                // append the cells to the new row, and append the row to the table
+                buttonCell.appendChild(button);
+                row.appendChild(nameCell);
+                row.appendChild(dateCell);
+                row.appendChild(venueCell);
+                row.appendChild(buttonCell);
+                tableBody.appendChild(row);
+            }
+        });
+    }
+
+    // functpion to display the empty table message, if no events found
     function displayEmptyTableMessage(){
+        // target the table body and create new table seperator
         const tableBody = document.getElementById('events-table-body');
         const seperator = document.createElement('tr');
         const separatorText = document.createElement('td');
+        // make it span the whole table, and display the message
         separatorText.colSpan = "4"; 
         separatorText.textContent = `No events found for this location - try a different location or playlist.`;
+        // append to table
         seperator.appendChild(separatorText);
+        // add it to the class for css styling
         seperator.classList.add('separator');
         tableBody.appendChild(seperator); 
     }
     
+    // handle the generation of the geohash from coordinates
     function generateGeohash(latitude, longitude, precision) {
+        // create a promise
         return new Promise((resolve, reject) => {
+            // make a post request to the geohash application route, sending the coordinates as JSON
             fetch('/geohash', {
                 method: 'POST',
                 headers: {
@@ -254,16 +298,19 @@ function displayEventData(data, genre) {
                 },
                 body: JSON.stringify({ latitude: latitude, longitude: longitude })
             })
+            // handle bad response
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 return response.json();
             })
+            // resolve promise with the generated geohash
             .then(data => {
                 console.log('Generated Geohash:', data.geohash);
                 resolve(data.geohash); 
             })
+            // handle error
             .catch(error => {
                 console.error('Error generating geohash:', error);
                 reject(error); 
@@ -271,15 +318,13 @@ function displayEventData(data, genre) {
         });
     }
 
-
+    // add event lostener to the update button for the getMarkerCoordinates function
     document.getElementById("update-location-btn").addEventListener("click", getMarkerCoordinates);
+    // initialize map
     initMap();
+    // ask user for location
     getLocation();
-
-    
-    
-    
-
+ 
  </script>
 </body>
 </html>

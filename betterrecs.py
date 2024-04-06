@@ -11,10 +11,6 @@ from spotipy.client import SpotifyException
 from flask import Flask, jsonify, request, url_for, session, redirect, render_template
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
-import matplotlib.pyplot as plt
-from io import BytesIO
-import base64
-
 
 # initialize Flask app
 app = Flask(__name__)
@@ -28,7 +24,6 @@ app.secret_key = 'wefkhejif37r72'
 # set the key for the token info in the session dictionary
 TOKEN_INFO = 'token_info'
 
-
 # route to handle logging in
 @app.route('/')
 def login():
@@ -38,7 +33,7 @@ def login():
     # redirect the user to the authorization URL
     return redirect(auth_url)
 
-
+# route to handle logging out
 @app.route('/logout')
 def logout():
     session.clear()  # Clear the session
@@ -137,6 +132,7 @@ def get_top_tracks(time_range, token_info):
         tracks_info_list.append((name, track_name, image_url))
     return tracks_info_list
 
+#function to retrieve user's auidio analysis for a given time range
 def get_audio_analysis(time_range, token_info):
     #create the spotipy object and make the call for 20 top tracks
     sp = spotipy.Spotify(auth=token_info['access_token'])
@@ -201,7 +197,7 @@ def get_audio_analysis(time_range, token_info):
     return(audio_analysis_dict)
     
     
-
+# application route for viewing playlists
 @app.route('/viewPlaylists')
 def view_playlists():
     try: 
@@ -221,6 +217,7 @@ def view_playlists():
     user_pl = {}
     images = []
     for playlist in current_playlists:
+        # store playlist names, ids, and imagesto be rendered to the html page
         plname = playlist['name']
         plid = playlist['id']
         user_pl[plname] = plid
@@ -229,9 +226,10 @@ def view_playlists():
         pl_image = pl_details['images'][0]['url'] if pl_details['images'] else None
         images.append(pl_image)
         
+    # render tht html template
     return render_template('playlist_list.html', pl=user_pl, images=images)
 
-
+# main function for generating song recommendations - this function encapsulates the entire machine learning model
 def get_recommendations(id, slider_values=None, song_ids=None):
     try: 
         # get the token info from the session
@@ -243,19 +241,21 @@ def get_recommendations(id, slider_values=None, song_ids=None):
 
     # generate the access token to make an instance of the spotipy object
     sp = spotipy.Spotify(auth=token_info['access_token'])
+    
+    # initialize variables to store tracks and genres
     tracks_data = []
-
     genres_list = []
     
     # get the playlist
     playlist = sp.playlist_tracks(id)
     
+    # get track ids from playlist
     track_ids = [track['track']['id'] for track in playlist['items']]
     if song_ids:
         for id in song_ids:
             track_ids.append(id)
-    print(track_ids)
     
+    # function to get genres from track ids
     def get_genres(track_id):
         # Get track information
         track_info = sp.track(track_id)
@@ -270,6 +270,7 @@ def get_recommendations(id, slider_values=None, song_ids=None):
                     
         return None
     
+    # loop through tracks
     for track in track_ids:
         track_data = {
                 'danceability': None,
@@ -299,6 +300,7 @@ def get_recommendations(id, slider_values=None, song_ids=None):
             track_data['liveness'] = audio_features['liveness']
             track_data['valence'] = audio_features['valence']
             track_data['tempo'] = audio_features['tempo']
+            # grab the genres for this track
             genres = get_genres(track)
             for genre in genres:
                 genres_list.append(genre)
@@ -332,12 +334,7 @@ def get_recommendations(id, slider_values=None, song_ids=None):
     # get rid of duplicate songs
     playlist_features.drop_duplicates('id')
         
-    # get the current directory and the relative path to find the csv file
-    # this is a workaround before the database is implemented
-    current_dir = os.getcwd()
-    relative_path = 'data/tracksgenres.csv'
-    file_path = os.path.join(current_dir, relative_path)
-
+    # if the database hasnt been queried yet for this session, function to get the all songs df must be run
     if 'all_songs_df' not in globals():
         create_all_songs_df()
         
@@ -361,7 +358,8 @@ def get_recommendations(id, slider_values=None, song_ids=None):
             if index in slider_values:
                 playlistfeatures[index] += slider_values[index]
         print("after adding sliders: ", playlistfeatures)
-                
+            
+    # convert string representation of genre list into actual list, using ast.literal_eval
     all_songs_df_new['genres'] = all_songs_df_new['genres'].apply(ast.literal_eval)
     # Find cosine similarity between the playlist and the complete song set
     all_songs_df_new['sim'] = cosine_similarity(all_songs_features.drop('id', axis = 1).values, playlistfeatures.values.reshape(1, -1))[:,0]
@@ -384,11 +382,14 @@ def get_recommendations(id, slider_values=None, song_ids=None):
 
         # Store track name and artist in the dictionary
         recommendations_dict[track_name] = artist_name
-                
+    
+    # return the recommendations, song ids, and genres
     return recommendations_dict, song_ids_list, genres_list
 
 
+# function to get the all_songs_df from the database
 def create_all_songs_df():
+    # database connection details
     host = 'fyp-db.cpc2i6c84e9b.eu-west-1.rds.amazonaws.com'  
     port = 3306
     database = 'fypdatabase'
@@ -399,16 +400,18 @@ def create_all_songs_df():
     conn = pymysql.connect(host=host, port=port, user=username, password=password, database=database)
     cursor = conn.cursor()
     print("getting df from database...")
+    # run a query to get all songs
     cursor.execute("SELECT danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo, track_pop, artists, genres, id FROM Music WHERE genres != '[]'")
     rows = cursor.fetchall()
     cursor.close()
     print("done")
+    # assign all songs to a dataframe, stored globally
     global all_songs_df
     all_songs_df = pd.DataFrame(rows, columns=['danceability', 'energy', 'loudness', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo', 'track_pop', 'artists', 'genres','id'])
 
 
 
-
+# route for displaying a selected playlist
 @app.route('/playlist/<string:id>')
 def playlist_page(id):
     try: 
@@ -444,7 +447,7 @@ def playlist_page(id):
     # return error page if no playlist found or other errors occur     
     return render_template('error.html', error_text = "playlist not found")
 
-
+# route for generating recommendations
 @app.route('/getRecommendations/<string:id>',  methods=['GET', 'POST'])
 def recommendations_page(id):
     try: 
@@ -468,7 +471,7 @@ def recommendations_page(id):
     recommendations_dict, song_ids_list, genres = get_recommendations(id, slider_values)
     return render_template('recommendations.html', id = id, recommendations_dict = recommendations_dict, song_ids_list = song_ids_list, genres=genres )
 
-
+# function for handling creation of genres list for use in concert API calls
 def get_concerts(id):
     try: 
         # get the token info from the session
@@ -484,9 +487,10 @@ def get_concerts(id):
     
     # get the playlist
     playlist = sp.playlist_tracks(id)
-    
+    # get track ids from playlist 
     track_ids = [track['track']['id'] for track in playlist['items']]
     
+    # function to get genres from playlist track ids
     def get_genres(track_id):
         # Get track information
         track_info = sp.track(track_id)
@@ -501,25 +505,29 @@ def get_concerts(id):
                     
         return None
     
+    # get a list of genres from playlist, for use in generating recommendations
     for track in track_ids:
         genres = get_genres(track)
         for genre in genres:
             genres_list.append(genre)
         genres_list = list(set(genres_list))
-    
+    #return list of genres
     return genres_list
 
+# application route for generating geohash
 @app.route('/geohash', methods=['POST'])
 def generate_geohash():
+    # extract latitude and longitude from json request
     data = request.json
     latitude = data['latitude']
     longitude = data['longitude']
+    # set the precision to 9
     precision = 9
-
+    # use geohash2 to generate a geohash using the coordinates, and retun it in json
     geohash = geohash2.encode(latitude, longitude, precision)
     return {'geohash': geohash}
             
-
+# application route for generating concert recommendations
 @app.route('/getConcerts/<string:id>',  methods=['GET', 'POST'])
 def get_concerts_pg(id):
     try: 
@@ -530,12 +538,13 @@ def get_concerts_pg(id):
         print('User not logged in')
         return redirect("/")
     
+    # get the list of genres for the playlist
     genres_list = get_concerts(id)
-
+    # render the html template
     return render_template("concerts.html", genres_list = genres_list)
 
 
-
+# application route for creating a playlist of selected songs OR regenerating recommendations
 @app.route('/create_playlist', methods=['POST'])
 def create_playlist():
     try: 
@@ -545,36 +554,39 @@ def create_playlist():
         # if the token info is not found, redirect the user to the login route
         print('User not logged in')
         return redirect("/")
-    
+    #create spotipy object
     sp = spotipy.Spotify(auth=token_info['access_token'])
+    #get tge song ids from the HTML form
     song_ids = request.form.getlist('song_ids[]')
-    print('Song IDs:', song_ids)
-    
+    # assure some songs were selected
     if len(song_ids) == 0:
         return "Select at least one song to add!"
-        
+    
+    # if user selected to create a playlist
     if 'add-to-playlist-btn' in request.form:
         try:
+            # get the current user
             username = sp.current_user()['id']
-
+            # make a new playlist in user's library
             playlist = sp.user_playlist_create(user=username, name="BetterRecs. Playlist", public=True)
-            
+            # add the selected songs to that library
             sp.playlist_add_items(playlist['id'], song_ids)
-            
+            # return success message
             return "Playlist created successfully!"
 
         except SpotifyException as e:
             # Handle Spotify API exception
             return f"Error Creating Playlist: {e}"
         
+    # if user selected to create a playlist
     elif 'regenerate-btn' in request.form:
-        
+        # get playlist id
         id = request.form.get('id')
+        # rerun the machine learning model, this time sending the extra selected songs
         recommendations, song_ids_list, genres = get_recommendations(id, None, song_ids)
-        
         #convert to lst of tuples to maintain order
         recommendations_dict = list(recommendations.items())
-        
+        # make the json response and return it
         response_data = {
         'id': id,
         'recommendations_dict': recommendations_dict,
@@ -603,7 +615,7 @@ def get_token():
 
     return token_info
 
-
+# function for makng the Spotify OAuth object
 def create_spotify_oauth():
     #create the client id, secret, redirect uri and scope for login
     return SpotifyOAuth(
@@ -613,6 +625,7 @@ def create_spotify_oauth():
         scope='user-library-read playlist-modify-public playlist-modify-private user-top-read'
     )
 
+# run the app
 if __name__ == '__main__':
     app.debug = True
     app.run()

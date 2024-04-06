@@ -33,6 +33,7 @@
 
     <div class = "stats-list">
     <h2> Your Top Artists <h2>
+        <!-- loop through the top artists as received from flask and display in a list -->
         {% if artists_lt is defined and artists_lt|length > 0 %}
         <div class = "scroll-list-topartists">
           <ol>
@@ -53,6 +54,7 @@
 
     <div class = "stats-list">
     <h2> Your Top Songs <h2>
+        <!-- loop through the top songs as received from flask and display in a list -->
         {% if tracks_lt %}
         <div class="scroll-list-topartists">
           <ol>

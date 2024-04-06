@@ -36,6 +36,7 @@
             <th>Listen</th>
             <th>Select</th>
           </tr>
+          <!-- loop through the recommended songs and display -->
           {% for artist, song in recommendations_dict.items() %}
           {% set id = song_ids_list[loop.index0] %}
           <tr>
@@ -63,35 +64,47 @@
     // Handling recommendation regeneraton with an asynchronous AJAX call
     $(document).ready(function() {
       $('.recommendations-actions').click(function(e) {
+        // prevet default form action from executing
         e.preventDefault(); 
+        // check with button was pressed
         var buttonName = $(this).attr('name');
+        // show the loading screen while recommendations are regenerating
         if (buttonName === 'regenerate-btn') {
           $('#loading-screen').show();
         }
+        // get playlist id and form data (selected songs and button name)
         var id = "{{ id }}";
         var formData = $('#playlist-form').serialize() + '&' + buttonName + '=1&id=' + id;
+        // ajax post request to the create playlist route (which also contains regeneration)
         $.ajax({
           type: 'POST',
           url: '/create_playlist',
           data: formData,
+          // show the response from playlist creation, if that was the button pressed
           success: function(response) {
             if (buttonName === 'add-to-playlist-btn') {
               $('#message-container').text(response); 
             }
+            // if regeneration was requested
             else if (buttonName === 'regenerate-btn') {
               console.log("done")
+              // hide the loading screen
               $('#loading-screen').hide();
+              // capture response data
               var id = response.id;
               var recommendations_dict = response.recommendations_dict;
               var song_ids_list = response.song_ids_list;
+              // show error if any data isnt defined
               if (id === undefined || recommendations_dict === undefined || song_ids_list === undefined) 
               {
                 $('#message-container').text(response); 
                 return;
               }
+              // otherwise, update the table with new recommendations
               updateTable(recommendations_dict, song_ids_list);
             }
           },
+          // handle error
           error: function(error) {
             console.error('Error:', error);
           }
@@ -101,8 +114,11 @@
 
     // Update recommendations with response data
     function updateTable(recommendations_dict, song_ids_list) {
+      // empty the table
       $('#recommendations-table').empty();
+      // add the headers again
       $('#recommendations-table').append('<tr><th>Song Name</th><th>Artist Name</th><th>Listen</th><th>Select</th></tr>');
+      // for each recommendation, create a new row and append it
       $.each(recommendations_dict, function(index, recommendation) {
         var artist = recommendation[0];
         var song = recommendation[1];
@@ -117,20 +133,24 @@
       document.getElementById("deselect-all-btn").addEventListener("click", deselectAll);
     }
     
+    // capture all checkboxes
     var checkboxes = document.querySelectorAll('#checkbox');
     
+    // select all checkboxes
     function selectAll() {
       checkboxes.forEach(function(checkbox) {
         checkbox.checked = true;
       });
     }
     
+    // deselect all checkboxes
     function deselectAll() {
       checkboxes.forEach(function(checkbox) {
         checkbox.checked = false;
       });
     }
     
+    // attach event listeners for select/deselct all buttons
     document.addEventListener("DOMContentLoaded", function() {
       document.getElementById("select-all-btn").addEventListener("click", selectAll);
       document.getElementById("deselect-all-btn").addEventListener("click", deselectAll);
