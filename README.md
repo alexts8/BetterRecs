@@ -1,4 +1,4 @@
-Alexandros Tsiogas C20336236 - Final Year Project Interim Application
+Alexandros Tsiogas C20336236 - Final Year Project 
 
 Important! - This application requires a Spotify acount to run correctly.
 If you would like to log in with your own Spotify account, the account's email address needs to be added to 
