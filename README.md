@@ -1,4 +1,4 @@
-**Alexandros Tsiogas C20336236 - Final Year Project **
+**Alexandros Tsiogas C20336236 - Final Year Project**
 
 **Important!** 
 This application requires a Spotify acount to run correctly.
