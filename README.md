@@ -1,6 +1,7 @@
 **Alexandros Tsiogas C20336236 - Final Year Project**
 
 **Important!** 
+
 This application requires a Spotify acount to run correctly.
 If you would like to log in with your own Spotify account, the account's email address needs to be added to 
 an application whitelist. Please feel free to contact me with your email and
@@ -16,6 +17,7 @@ This application was developed and tested in Visual Studio Code. These steps wil
 the applcation in VSCode.
 
 **Running The App**
+
 Once this folder has been extracted, open it in an editor in VSCode. The python file "betterrecs.py" 
 should be ran, using the "Run Code" button in the top right of the screen. A link to a localhost URL (should be http://127.0.0.1:5000)
 will display in the terminal - when followed, this link should display the Spotify Authentication page.
