@@ -7,7 +7,7 @@ If you would like to log in with your own Spotify account, the account's email a
 an application whitelist. Please feel free to contact me with your email and
 I will add you to this whitelist, allowing you to log in with your own Spotify account.
 Otherwise, please use this dummy account - USERNAME: alextsiogas.fyp@gmail.com   PASSWORD: alexfyp2024
-Please be aware that this account doesnt have a significatnt Spotify listening histore, and so the "Profile" page
+Please be aware that this account doesnt have a significatnt Spotify listening history, and so the "Profile" page
 may not display much data.
 
 Please also note that the application may face difficulties running in eduroam/public WIFI connections,
@@ -30,6 +30,7 @@ If the app doesn't run on first attempt, certain packages may need to be install
 !pip install spotipy
 !pip install pandas
 !pip install scikit-learn
+!pip install geohash2
 
 Please contact me if any other issues are encountered running the application.
 
