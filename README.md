@@ -4,9 +4,7 @@
 
 This application requires a Spotify acount to run correctly.
 If you would like to log in with your own Spotify account, the account's email address needs to be added to 
-an application whitelist. Please feel free to contact me with your email and
-I will add you to this whitelist, allowing you to log in with your own Spotify account.
-Otherwise, please use this dummy account - USERNAME: alextsiogas.fyp@gmail.com   PASSWORD: alexfyp2024
+an application whitelist.
 Please be aware that this account doesnt have a significatnt Spotify listening history, and so the "Profile" page
 may not display much data.
 
