@@ -1,4 +1,4 @@
-**Alexandros Tsiogas C20336236 - Final Year Project**
+**Welcome to BetterRecs!**
 
 **Important!** 
 
