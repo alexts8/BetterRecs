@@ -5,8 +5,6 @@
 This application requires a Spotify acount to run correctly.
 If you would like to log in with your own Spotify account, the account's email address needs to be added to 
 an application whitelist.
-Please be aware that this account doesnt have a significatnt Spotify listening history, and so the "Profile" page
-may not display much data.
 
 Please also note that the application may face difficulties running in eduroam/public WIFI connections,
 due to their network restrictions. Please use a personal WIFI connection.
