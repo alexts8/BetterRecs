@@ -19,7 +19,7 @@ app = Flask(__name__)
 app.config['SESSION_COOKIE_NAME'] = 'Spotify Cookie'
 
 # set a random secret key to sign the cookie
-app.secret_key = 'wefkhejif37r72'
+app.secret_key = '######'
 
 # set the key for the token info in the session dictionary
 TOKEN_INFO = 'token_info'
